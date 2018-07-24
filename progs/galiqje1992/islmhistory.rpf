@@ -1,0 +1,35 @@
+*
+* Replication file for Gali, "How Well Does the IS-LM Model Fit Postwar
+* U.S. Data", QJE 1992, vol 107, no. 2, pp 709-738.
+*
+* Section IV.
+*
+source islmdata.src
+source islmvarsetup.src
+*
+cvmodel(parmset=base+r6,b=bf,factor=factor,iters=400) %sigma
+*
+history(model=islm+identities,factor=factor,results=history,from=fstart,to=fend)
+@nbercycles(down=recessions)
+*
+* The VAR is computed with GNP represented by growth with means
+* extracted. To put this back to GNP itself, we need to add in the
+* accumulation of the difference between GNP growth and its de-meaned
+* version. We also add in to this the forecast from the initial
+* conditions.
+*
+set removed = ygr-cygr
+acc removed fstart fend
+set supplywithdrift = history(1,5)+removed+history(2,5)
+*
+graph(shade=recessions,footer="Figure Va Supply Component of GNP (drift added)")
+# supplywithdrift
+graph(shade=recessions,footer="Figure Vb Supply Component of GNP (no drift)")
+# history(2,5)
+graph(shade=recessions,footer="Figure VI Money Supply Component of GNP")
+# history(3,5)
+graph(shade=recessions,footer="Figure VII Money Demand Component of GNP")
+# history(4,5)
+graph(shade=recessions,footer="Figure VIII IS Component of GNP")
+# history(5,5)
+

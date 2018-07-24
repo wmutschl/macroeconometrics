@@ -1,0 +1,89 @@
+* XVAR6u.RTS, MWW 6/16/89
+*  Rats program to estimate the five variable model
+*
+*  In this program the money demand disturbance is I(0), so that the 
+*   cointegrating relation from the money demand equation is enforced.
+*
+bma com 3500 mat 50 glo 300
+ieval nac=40
+sou kpsw1.inp
+env err=1 war=1
+*************
+* Set up VECM
+*
+*  (i)    Model definition parameters
+*
+ieval nv=6 ;ieval nk=3
+ieval nciv=nv-nk;
+ieval n1=(54:1) ;ieval n2=(88:4)
+ieval nest1=n1 ; ieval nest2=n2
+ieval nlags=8 ;ieval nimp=120 
+ieval nimpr = 32   ;* number of impulses to report
+eval ep = -.013 ; eval ey = 1.197; * Money demand elast (fygm3), 54:1-88:4
+eval phi1=.0033 ; eval phi2 = -.0028 ;* Stock-Watson MLE's, 54:1 - 88:4
+*
+* Convert ep, phi1 and phi2 to quarterly fractional numbers -- 
+*  Note Fygm3 is divided by 400 in KPSW1.inp
+*
+eval ep=400*ep; eval phi1=phi1*400; eval phi2=phi2*400
+*
+*
+*  (ii)   Basic variables in model, in first differences
+* 
+ieval k=0
+dofor yy=y c in mp rgs dp
+ ieval k=k+1
+ set k / = yy(t)
+end dofor
+*
+*  (iii)  Cointegrating vectors (either theoretical or empirical), to be
+*         entered as columns of alpha
+*
+dim alpha(nv,nv-nk) a0(nv,nk)
+read(unit=input) alpha
+-1 -1 -8
+ 1  0  0
+ 0  1  0
+ 0  0  1
+-7 -6 -9
+ 7  6  0
+eval alpha(1,3)=-ey
+eval alpha(5,3)=-ep
+eval alpha(5,1)=-phi1 ; eval alpha(6,1)=phi1
+eval alpha(5,2)=-phi2 ; eval alpha(6,2)=phi2
+*
+* Desired form for "A" (factor loading) matrix -- must:
+*   (i)  be of form AHAT=A0*P, where P is kxk lower triangular with
+*        ones on the diagonal
+*   (ii) have tr(ALPHA)*A0=0, i.e. be orthogonal to cointegrating vectors
+*
+read(unit=input) a0
+ 1   0  0 
+ 1   0  7 
+ 1   0  6 
+ 8   9  9 
+ 0   1  1 
+ 0   1  0 
+*
+eval a0(4,1)=ey
+eval a0(4,2)=ep
+eval a0(2,3)=phi1 ; eval a0(3,3)=phi2 ; eval a0(4,3)=ep
+*
+declare rect xmark(nciv,nk)
+mat xmark=(tr(alpha))*a0
+write xmark
+*
+*--------------------------------------------------*
+* Estimate model, A, Impulse responses, Variance Decomps
+*
+*output noecho
+sou ctvecm63.pgm          ;* Estimates VECM
+ieval nvdp=7
+ dim ivd(nvdp)
+ read(unit=input) ivd
+ 1 4 8 12 16 20 24
+sou xirf.pgm          ;* Estimates IRF's and IRF's at horizons in ivd
+sou xtcalc.pgm         ;* Forms structural errors
+*--------------------------------------------------*
+end
+

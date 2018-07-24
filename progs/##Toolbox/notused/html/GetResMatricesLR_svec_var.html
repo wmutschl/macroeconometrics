@@ -1,0 +1,260 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>GetResMatricesLR_svec_var</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-03-16"><meta name="DC.source" content="GetResMatricesLR_svec_var.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [mS,vs,model,nfreea,nfreeb,nfreeall, nResB, nResC1] = GetResMatricesLR_svec_var(mB_Res, mC1_Res, mC1)
+</pre><pre class="codeinput"><span class="comment">% /*</span>
+<span class="comment">% **	Purpose: 	Computes approtiate restrictions matrices in the</span>
+<span class="comment">% **				presence of long run restrictions</span>
+<span class="comment">% **</span>
+<span class="comment">% **	Input:		mB_Res: 	K x K matrix of user specified restrictions for contemp. impact matrix</span>
+<span class="comment">% **							-1e12 - unrestricted, 0 - restricted to 0;</span>
+<span class="comment">% **</span>
+<span class="comment">% **				mC1_Res: 	K x K matrix of user specified restrictions for long run impact matrix</span>
+<span class="comment">% **							-1e12 - unrestricted, 0 - restricted to 0;</span>
+<span class="comment">% **</span>
+<span class="comment">% **				mC1:		K x K, long run impact matrix</span>
+<span class="comment">% **</span>
+<span class="comment">% **</span>
+<span class="comment">% **	Output: 	mS: 		2*K^2 x nfreepar, restriction matrix in explicit form</span>
+<span class="comment">% **</span>
+<span class="comment">% **				vs:			K^2 x 1, vector of normalizing constants</span>
+<span class="comment">% **</span>
+<span class="comment">% **				model:		is always 3: C-model</span>
+<span class="comment">% **</span>
+<span class="comment">% **				nfreea:		# of free parameters in A, is always 0 because we estimate a C model</span>
+<span class="comment">% **</span>
+<span class="comment">% **				nfreeb:		# of parameters in \gamma_B, because of long run restrictions this does not</span>
+<span class="comment">% **							correspond to # of par. in B.</span>
+<span class="comment">% **</span>
+<span class="comment">% **				nfreeall:	nfreea+nfreeb</span>
+<span class="comment">% **</span>
+<span class="comment">% **				nResB:		# of contemp. restrictions</span>
+<span class="comment">% **</span>
+<span class="comment">% **				nResC1		# of long run restrictions</span>
+<span class="comment">% **</span>
+<span class="comment">% */</span>
+K = size(mB_Res,1);
+mRo = eye(K^2);
+vSel = vec(mB_Res) ~= 0;
+mR_B = mRo(find(vSel==0),:);
+
+mRo = eye(K^2);
+vSel = vec(mC1_Res) ~= 0;
+mR_C1 = mRo(find(vSel==0),:);
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in GetResMatricesLR_svec_var (line 33)
+K = size(mB_Res,1);
+</pre><div><ul><li>_ | $SECTION TITLE</li></ul></div><div><ul><li>ITEM1</li></ul></div><pre>PREFORMATTED</pre><pre class="language-matlab"><span class="keyword">for</span> x = 1:10
+</pre><p><img src="GetResMatricesLR_svec_var_eq17467035999183504765.png" alt="$$e^{\pi i} + 1 = 0$$"></p><p><img src="GetResMatricesLR_svec_var_eq17467035999183504765.png" alt="$$e^{\pi i} + 1 = 0$$"></p><pre>     disp(x)
+ end</pre><pre>TEXT</pre><div><ul><li>ITEM2</li></ul></div><p>DESCRIPTIVE TEXT$ | _ *</p><pre class="codeinput"><span class="keyword">if</span> isempty(mR_C1);
+    mR_C1 = [];
+<span class="keyword">end</span>
+
+mR_C1 = mR_C1*kron(eye(K),mC1);
+
+
+<span class="keyword">if</span> isempty(mR_B) == 0
+    mR = [mR_C1;mR_B];
+<span class="keyword">else</span>
+    mR = mR_C1;
+<span class="keyword">end</span>
+
+mSb = null(mR);
+<span class="comment">% if scalerr(mSb) == 1;</span>
+<span class="comment">%     errorlog("Cannot compute restrictions in explicit form!\nUse different restrictions...");</span>
+<span class="comment">%     retp(-10,-10,-10,-10,-10,-10,-10,-10);</span>
+<span class="comment">% end;</span>
+
+mS = [zeros(K^2,size(mSb,2));mSb];
+nfreeb = size(mSb,2);
+vs = [vec(eye(K));zeros(K^2,1)];
+model  = 3;
+nfreea = 0;
+
+nfreeall = nfreea+nfreeb;
+
+<span class="keyword">if</span> isempty(mR_C1) == 0
+    nResC1  = rank(mR_C1);
+<span class="keyword">else</span>
+    nResC1 = 0;
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> isempty(mR_B) == 0;
+    nResB = rank(mR_B);
+<span class="keyword">else</span>
+    nResB = 0;
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [mS,vs,model,nfreea,nfreeb,nfreeall, nResB, nResC1] = GetResMatricesLR_svec_var(mB_Res, mC1_Res, mC1)
+% /*
+% **	Purpose: 	Computes approtiate restrictions matrices in the 
+% **				presence of long run restrictions	
+% **
+% **	Input:		mB_Res: 	K x K matrix of user specified restrictions for contemp. impact matrix
+% **							-1e12 - unrestricted, 0 - restricted to 0;
+% **
+% **				mC1_Res: 	K x K matrix of user specified restrictions for long run impact matrix	
+% **							-1e12 - unrestricted, 0 - restricted to 0;
+% **
+% **				mC1:		K x K, long run impact matrix	
+% **
+% **	
+% **	Output: 	mS: 		2*K^2 x nfreepar, restriction matrix in explicit form
+% **
+% **				vs:			K^2 x 1, vector of normalizing constants
+% **
+% **				model:		is always 3: C-model
+% **
+% **				nfreea:		# of free parameters in A, is always 0 because we estimate a C model
+% **				
+% **				nfreeb:		# of parameters in \gamma_B, because of long run restrictions this does not
+% **							correspond to # of par. in B. 
+% **
+% **				nfreeall:	nfreea+nfreeb
+% **
+% **				nResB:		# of contemp. restrictions
+% **
+% **				nResC1		# of long run restrictions
+% **				
+% */
+K = size(mB_Res,1);
+mRo = eye(K^2);
+vSel = vec(mB_Res) ~= 0;
+mR_B = mRo(find(vSel==0),:);	
+		
+mRo = eye(K^2);
+vSel = vec(mC1_Res) ~= 0;
+mR_C1 = mRo(find(vSel==0),:);
+%% 
+%%
+% * _ | $SECTION TITLE
+% 
+% * ITEM1
+% 
+%  PREFORMATTED
+% 
+%   for x = 1:10
+% 
+% $$e^{\pi i} + 1 = 0$$
+% 
+% $$e^{\pi i} + 1 = 0$$
+% 
+% 
+%       disp(x)
+%   end
+% 
+%  TEXT
+% 
+% * ITEM2
+% 
+% DESCRIPTIVE TEXT$ | _ *
+
+if isempty(mR_C1);
+    mR_C1 = [];
+end	
+
+mR_C1 = mR_C1*kron(eye(K),mC1);
+   
+
+if isempty(mR_B) == 0
+    mR = [mR_C1;mR_B];   	
+else
+    mR = mR_C1;
+end     	
+   	
+mSb = null(mR);
+% if scalerr(mSb) == 1;  
+%     errorlog("Cannot compute restrictions in explicit form!\nUse different restrictions...");
+%     retp(-10,-10,-10,-10,-10,-10,-10,-10); 
+% end; 	
+
+mS = [zeros(K^2,size(mSb,2));mSb];
+nfreeb = size(mSb,2);
+vs = [vec(eye(K));zeros(K^2,1)];
+model  = 3;
+nfreea = 0;
+  
+nfreeall = nfreea+nfreeb;
+
+if isempty(mR_C1) == 0
+    nResC1  = rank(mR_C1);
+else
+    nResC1 = 0;
+end
+
+if isempty(mR_B) == 0;
+    nResB = rank(mR_B);
+else
+    nResB = 0;
+end
+
+
+##### SOURCE END #####
+--></body></html>

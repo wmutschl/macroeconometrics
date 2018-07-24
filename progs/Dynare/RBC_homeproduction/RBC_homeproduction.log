@@ -1,0 +1,114 @@
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+Found 11 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+4 elements among 30 in the incidence matrices are below the cutoff (1e-015) and are discarded
+The contemporaneous incidence matrix has 30 elements
+Normalizing the model...
+Finding the optimal block decomposition of the model ...
+5 block(s) found:
+  3 recursive block(s) and 2 simultaneous block(s).
+  the largest simultaneous block has 5 equation(s)
+                                 and 5 feedback variable(s).
+Computing dynamic model derivatives:
+ - order 1
+ - order 2
+4 elements among 37 in the incidence matrices are below the cutoff (1e-015) and are discarded
+The contemporaneous incidence matrix has 26 elements
+Normalizing the model...
+Finding the optimal block decomposition of the model ...
+5 block(s) found:
+  3 recursive block(s) and 2 simultaneous block(s).
+  the largest simultaneous block has 5 equation(s)
+                                 and 5 feedback variable(s).
+Processing outputs ...
+done
+Preprocessing completed.
+the guess values are too far from the solution
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('steady', 'C:\dynare\4.5.3\matlab\steady.m', 104)" style="font-weight:bold">steady</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\steady.m',104,0)">line 104</a>)
+    print_info(info,options_.noprint, options_);
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('RBC_homeproduction', 'C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_homeproduction\RBC_homeproduction.m', 526)" style="font-weight:bold">RBC_homeproduction</a> (<a href="matlab: opentoline('C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_homeproduction\RBC_homeproduction.m',526,0)">line 526</a>)
+steady;
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.5.3\matlab\dynare.m', 223)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare.m',223,0)">line 223</a>)
+evalin('base',fname) ;
+} 
+dynare RBC_homeproduction
+
+Configuring Dynare ...
+[mex] Generalized QZ.
+[mex] Sylvester equation solution.
+[mex] Kronecker products.
+[mex] Sparse kronecker products.
+[mex] Local state space iteration (second order).
+[mex] Bytecode evaluation.
+[mex] k-order perturbation solver.
+[mex] k-order solution simulation.
+[mex] Quasi Monte-Carlo sequence (Sobol).
+[mex] Markov Switching SBVAR.
+
+Using 64-bit preprocessor
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+Found 11 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+4 elements among 30 in the incidence matrices are below the cutoff (1e-015) and are discarded
+The contemporaneous incidence matrix has 30 elements
+Normalizing the model...
+Finding the optimal block decomposition of the model ...
+5 block(s) found:
+  3 recursive block(s) and 2 simultaneous block(s).
+  the largest simultaneous block has 5 equation(s)
+                                 and 5 feedback variable(s).
+Computing dynamic model derivatives:
+ - order 1
+ - order 2
+4 elements among 37 in the incidence matrices are below the cutoff (1e-015) and are discarded
+The contemporaneous incidence matrix has 26 elements
+Normalizing the model...
+Finding the optimal block decomposition of the model ...
+5 block(s) found:
+  3 recursive block(s) and 2 simultaneous block(s).
+  the largest simultaneous block has 5 equation(s)
+                                 and 5 feedback variable(s).
+Processing outputs ...
+done
+Preprocessing completed.
+
+Floating point error in bytecode: X^a with X=-210205
+      equation 5 in block 1
+      residual(1) = R - ((alph * A) * ((Lm / K)$ ^ £(1 - alph)))
+                                                                 
+Floating point error in bytecode: X^a with X=-210205
+      equation 5 in block 4
+      residual(1) = R - ((alph * A) * ((Lm / K)$ ^ £(1 - alph)))
+                                                                 
+Fatal error in bytecode: in compute_blocks, unknown command 24 (block=3)
+
+{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('mexErrCheck', 'C:\dynare\4.5.3\matlab\mexErrCheck.m', 41)" style="font-weight:bold">mexErrCheck</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\mexErrCheck.m',41,0)">line 41</a>)
+Error encountered in: bytecode.
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('evaluate_static_model', 'C:\dynare\4.5.3\matlab\evaluate_static_model.m', 44)" style="font-weight:bold">evaluate_static_model</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\evaluate_static_model.m',44,0)">line 44</a>)
+    mexErrCheck('bytecode', check1);
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('evaluate_steady_state', 'C:\dynare\4.5.3\matlab\evaluate_steady_state.m', 295)" style="font-weight:bold">evaluate_steady_state</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\evaluate_steady_state.m',295,0)">line 295</a>)
+    resid = evaluate_static_model(ys,exo_ss,params,M,options);
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('steady_', 'C:\dynare\4.5.3\matlab\steady_.m', 55)" style="font-weight:bold">steady_</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\steady_.m',55,0)">line 55</a>)
+[steady_state,params,info] = evaluate_steady_state(oo_.steady_state,M_,options_,oo_,~options_.steadystate.nocheck);
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('steady', 'C:\dynare\4.5.3\matlab\steady.m', 81)" style="font-weight:bold">steady</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\steady.m',81,0)">line 81</a>)
+[steady_state,M_.params,info] = steady_(M_,options_,oo_);
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('RBC_homeproduction', 'C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_homeproduction\RBC_homeproduction.m', 494)" style="font-weight:bold">RBC_homeproduction</a> (<a href="matlab: opentoline('C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_homeproduction\RBC_homeproduction.m',494,0)">line 494</a>)
+steady;
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.5.3\matlab\dynare.m', 223)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare.m',223,0)">line 223</a>)
+evalin('base',fname) ;
+} 

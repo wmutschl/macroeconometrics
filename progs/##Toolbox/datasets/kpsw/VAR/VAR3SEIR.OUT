@@ -1,0 +1,1390 @@
+ RATS Version 3.03. 10/20/89
+ Copyright (c) 1986-89 by VAR Econometrics
+ Portions (c) 1988 by Doan Associates
+ * Program kpsw3.rts, from stock, modified by mww 11/17/90 (work with RATS 3)
+ * Calculation of standard errors on impulse responses, by acb 5/31/89
+ * See Rats manual section on Monte Carlo Integration
+ *
+ *************
+ * Set up VECM
+ *
+ *  (i)    Model definition parameters
+ *
+ bma com 3500 mat 50 glo 300
+ ieval nv=3      ;ieval nk=1
+ ieval nlags=8   ;ieval nimp=120
+ ieval nac=60    ;* number of series to allocate
+ ieval nciv=nv-nk
+ ieval neq=nv+2*nciv
+ ieval mxvr=nv*nlags+3
+ seed 123
+ sou kpsw3.inp
+ * kpsw1.inp, from Stock, modified by mww 4/20/89
+ *
+ * inputs, transforms data for KPSW1 analysis, using citibase data
+ cal 47 1 4
+ all nac 88:4 neq mxvr
+ ieval nfirst = (47:1)
+ ieval nlast  = (88:4)
+ ***
+ sou ctinit3.pgm
+ * CTINIT.PGM                        JHS  3/6/87
+ *
+ * Declares work arrays for subsequent CT programs ;must be run before
+ *    any executable commands
+ *
+ dec rect h hinv hs hsinv c1 r0 r1 r2 r3
+ dec rect sel a0 as aparm ahat alpha qk rsq1
+ dec sym cc v2 v3 sdm sdmc
+ dec vec sigeta ivd xout kp9
+ *
+ dec rect h2 hinv2 hs2 hsinv2 c2 r02 r12 r22 r32
+ dec rect sel2 a2 as2 aparm2 ahat2 alpha2 qk2 rsq12
+ dec sym cc2 v22 v32 sdm2 sdmc2
+ dec vec sigeta2 ivd2 xout2 kp92
+ ***
+ open data \kpsw1\data\kpsw1.dat
+ data(for=rats,compact=average) / gnp82 gc82 gif82 gge82 p16 gnp gge
+     GNP82   
+ CITIBASE SERIES: GNP82                                                         
+ GROSS NATIONAL PRODUCT (BIL 1982$)                                             
+     GC82    
+ CITIBASE SERIES: GC82                                                          
+ PERSONAL CONSUMPTION EXPENDITURES (BIL 1982$)                                  
+     GIF82   
+ CITIBASE SERIES: GIF82                                                         
+ GROSS PRIV DOMESTIC INVESTMENT, FIXED (BIL 1982$)                              
+     GGE82   
+ CITIBASE SERIES: GGE82                                                         
+ GOVERMENT PURCHASES OF GOODS AND SERVICES, TOTAL (1982$)                       
+     P16     
+ CITIBASE SERIES: P16                                                           
+ POPULATION: TOTAL CIVILIAN NONINSTITUTIONAL , AGE 16 +(THOUS.,NSA)             
+     GNP     
+ CITIBASE SERIES: GNP                                                           
+ GROSS NATIONAL PRODUCT, TOTAL                                                  
+     GGE     
+ CITIBASE SERIES: GGE                                                           
+ GOVERMENT PURCHASES OF GOODS AND SERVICES, TOTAL                               
+ close data
+ *
+ set y     / = log(gnp82(t)-gge82(t))-log(p16(t))
+ set c     / = log(gc82(t))-log(p16(t))
+ set in     / = log(gif82(t))-log(p16(t))
+ **********
+ set dy  nfirst+1 nlast = y(t)-y(t-1)
+ set dc  nfirst+1 nlast = c(t)-c(t-1)
+ set din nfirst+1 nlast = in(t)-in(t-1)
+ *
+ * Money and Price -- 5 variable model
+ *
+ ieval nfirst = (51:1)
+ ieval nlast  = (88:4)
+ open data \kpsw1\data\kpsw1.dat
+ data(for=rats,compact=average) nfirst nlast m2
+     M2      
+ CONSTRUCTED M2 SERIES (CITIBASE, FM2 FROM 59:1-88:12)                          
+ MONEY STOCK: M2                                                                
+ close data
+ *
+ set p nfirst nlast = log( (gnp(t)-gge(t))/(gnp82(t)-gge82(t)) )
+ set m nfirst nlast = log(m2(t)) - log(p16(t))
+ **********
+ set dp  nfirst+1 nlast = p(t)-p(t-1)
+ set dm  nfirst+1 nlast = m(t)-m(t-1)
+ ieval n1=(49:2) ;ieval n2=(88:4)
+ *
+ *  (ii)   Basic variables in model, in first differences
+ *
+ ieval k=0
+ 127297 dofor yy=y c in
+ 127323  ieval k=k+1
+ 127333  set k / = yy(t)
+ 127352 end dofor
+ *
+ *  (iii)  Cointegrating vectors (either theoretical or empirical), to be
+ *         entered as columns of alpha
+ *
+ dim alpha(nv,nv-nk) a0(nv,nk)
+ read(unit=input) alpha
+  1  1
+ -1  0
+  0 -1
+ *
+ * Desired form for "A" (factor loading) matrix -- must:
+ *   (i)  be of form AHAT=A0*P, where P is kxk lower triangular with
+ *        ones on the diagonal
+ *   (ii) have tr(ALPHA)*A0=0, i.e. be orthogonal to cointegrating vectors
+ *
+ read(unit=input) a0
+  1
+  1
+  1
+ *
+ *--------------------------------------------------*
+ * Estimate model, A, Impulse responses
+ *
+ * CTVECM.PGM, JHS 3/6/87 modified my MWW 4/20/89
+ * Constructs, estimates VECM version of common trends model, computes
+ *     moving average representation
+ *
+ ieval iy1=1 ;ieval iy2=iy1+nv-1
+ ieval idy1=iy2+1 ;ieval idy2=idy1+nv-1
+ ieval idz1=idy2+1 ;ieval idz2=idz1+nciv-1
+ ieval iz1=idz2+1 ;ieval iz2=iz1+nciv-1
+ ieval ieps1=iz2+1 ;ieval ieps2=ieps1+nv-1
+ ieval iscr=ieps2+1
+ ieval ic1=iscr+1 ;ieval ic2=ic1+nv*nv-1
+ ieval ieta1=ic2+1 ;ieval ieta2=ieta1+nv-1
+ ieval iferr1=ieta2+1 ;ieval iferr2=iferr1+nv*(nk+1)-1
+ ieval ixp1=iferr2+1 ;ieval ixp2=ixp1+nv-1
+ dim c1(nv,nv) r0(nv,nv) r1(nv,nv) r2(nv,nk) r3(nk,nk)
+ dim sel(nk,nv) as(nv,nk) aparm(nk,nk) ahat(nv,nk) sigeta(nv) xout(nv+1)
+ dim h(nv,nv) hinv(nv,nv) hs(nv,nv) hsinv(nv,nv) qk(nv,nv)
+ dim cc(nv,nv) v2(nv,nv) v3(nk,nk)
+ ** initialize matrices
+ mat sel=const(0.0)
+ 127527 do i=1,nk ;eval sel(i,i)=1.0 ;end do i
+ set time1 / = t
+ *
+ * create differences, error correction variables, lagged values
+ *
+ 127875 do k1=iy1,iy2
+ 127888  set (k1+nv) / = k1(t)-k1(t-1)
+ 127920 *diff k1 / 1 (k1+nv)
+ 127920 end do k1
+ 127875 do k1=iz1,iz2
+ 127888  zer k1
+ 127894  do j=1,nv
+ 127907   ieval k2=iy1+j-1
+ 127920   set k1 / = k1(t)+alpha(j,k1-iz1+1)*k2(t)
+ 127960  end do j
+ 127962   set (idz1+k1-iz1) / = k1(t)-k1(t-1)
+ 127997 * diff k1 / 1 (idz1+k1-iz1)
+ 127997 end do k1
+ *
+ *output noecho
+ dis ' Check that data series have been properly constructed: '
+  Check that data series have been properly constructed:  
+ dis ' '
+   
+ dis '                  y runs from' iy1 'to' iy2
+                   y runs from       1 to       3 
+ dis '            delta y runs from' idy1 'to' idy2
+             delta y runs from       4 to       6 
+ dis '            delta z runs from' idz1 'to' idz2
+             delta z runs from       7 to       8 
+ dis '                  z runs from' iz1 'to' iz2
+                   z runs from       9 to      10 
+ print(dates) n1-nlags-1 n1+2 iy1 to iz2
+
+
+  ENTRY        NO LABEL  1     NO LABEL  2     NO LABEL  3     NO LABEL  4
+      47: 1    -4.74770        -5.03553        -6.35554          NA        
+      47: 2    -4.74631        -5.02303        -6.38716         .138587E-02
+      47: 3    -4.74682        -5.02604        -6.35435        -.514773E-03
+      47: 4    -4.73267        -5.03102        -6.28371         .141546E-01
+      48: 1    -4.73132        -5.02536        -6.25983         .134976E-02
+      48: 2    -4.72844        -5.01751        -6.25542         .288347E-02
+      48: 3    -4.73014        -5.01855        -6.26832        -.169929E-02
+      48: 4    -4.73276        -5.01231        -6.27713        -.262046E-02
+      49: 1    -4.75154        -5.01334        -6.33538        -.187843E-01
+      49: 2    -4.77146        -5.00395        -6.38238        -.199200E-01
+      49: 3    -4.77016        -5.00903        -6.39087         .130329E-02
+      49: 4    -4.78214        -5.00403        -6.36385        -.119825E-01
+
+
+  ENTRY        NO LABEL  5     NO LABEL  6     NO LABEL  7     NO LABEL  8
+      47: 1      NA              NA              NA              NA        
+      47: 2     .125030E-01    -.316207E-01    -.111171E-01     .330066E-01
+      47: 3    -.301137E-02     .328151E-01     .249659E-02    -.333299E-01
+      47: 4    -.498502E-02     .706339E-01     .191396E-01    -.564793E-01
+      48: 1     .566687E-02     .238793E-01    -.431711E-02    -.225295E-01
+      48: 2     .784417E-02     .441527E-02    -.496070E-02    -.153180E-02
+      48: 3    -.103797E-02    -.128988E-01    -.661314E-03     .111995E-01
+      48: 4     .624410E-02    -.881178E-02    -.886455E-02     .619132E-02
+      49: 1    -.102932E-02    -.582542E-01    -.177550E-01     .394699E-01
+      49: 2     .939027E-02    -.469967E-01    -.293103E-01     .270767E-01
+      49: 3    -.508104E-02    -.849355E-02     .638433E-02     .979685E-02
+      49: 4     .499899E-02     .270234E-01    -.169815E-01    -.390058E-01
+
+
+  ENTRY        NO LABEL  9     NO LABEL 10
+      47: 1     .287834         1.60784    
+      47: 2     .276717         1.64085    
+      47: 3     .279213         1.60752    
+      47: 4     .298353         1.55104    
+      48: 1     .294036         1.52851    
+      48: 2     .289075         1.52698    
+      48: 3     .288414         1.53818    
+      48: 4     .279549         1.54437    
+      49: 1     .261794         1.58384    
+      49: 2     .232484         1.61092    
+      49: 3     .238869         1.62071    
+      49: 4     .221887         1.58171    
+
+
+
+ * ------ construct system
+ system
+ var idy1 to idy2
+ lags 1 to nlags
+ det constant -iz1 1 1 -(iz1+1) 1 1
+ *
+ * Additional equations specifying error correction terms
+ *
+ 127909 do i=nv+1,nv+nciv
+ 127928  ieval j=i+nciv ;ieval i1=i-nv
+ 127948  ieval k1=idz1+i-(nv+1) ;ieval k2=iz1+i-(nv+1)
+ 127980  equ(identity) i k1 ;#idy1 to idy2
+ 128003  ass i ;#alpha(1,i1) alpha(2,i1) alpha(3,i1)
+ 128036  equ(identity) j k2 ;#k1 -k2 1 1 ;ass j ;#1.0 1.0
+ 128078 end do i
+ Series     NO LABEL (    4 )
+ Series     NO LABEL (    5 )
+ Series     NO LABEL (    6 )
+ Series     NO LABEL (    7 )
+ Series     NO LABEL (    9 )   LAGS    1 TO    1
+ Series     NO LABEL (    4 )
+ Series     NO LABEL (    5 )
+ Series     NO LABEL (    6 )
+ Series     NO LABEL (    8 )
+ Series     NO LABEL (   10 )   LAGS    1 TO    1
+ end(system)
+ *****
+ estimate n1 n2 ieps1
+
+
+
+ EQUATION    1
+ DEPENDENT VARIABLE    4     NO LABEL
+ FROM      49: 2 UNTIL      88: 4
+ TOTAL OBSERVATIONS    159     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   159     DEGREES OF FREEDOM    132
+ R**2            .36577880     RBAR**2         .24085644
+ SSR         .19026148E-01     SEE         .12005727E-01
+ DURBIN-WATSON  1.94242158
+ Q(  36)=   30.6861       SIGNIFICANCE LEVEL  .719161    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     NO LABEL   4   1   .4742482E-01   .1229659       .3856746    
+   2     NO LABEL   4   2  -.1232420E-01   .1267301      -.9724763E-01
+   3     NO LABEL   4   3  -.1042802       .1260644      -.8271978    
+   4     NO LABEL   4   4  -.1983014       .1310096      -1.513640    
+   5     NO LABEL   4   5  -.1227323       .1304218      -.9410409    
+   6     NO LABEL   4   6   .2005161E-01   .1311067       .1529412    
+   7     NO LABEL   4   7  -.2264122E-01   .1290109      -.1754985    
+   8     NO LABEL   4   8   .1053596       .1229392       .8570061    
+   9     NO LABEL   5   1   .2980412       .1646708       1.809921    
+  10     NO LABEL   5   2   .8524817E-01   .1664595       .5121257    
+  11     NO LABEL   5   3   .6718958E-01   .1660914       .4045337    
+  12     NO LABEL   5   4   .2599511       .1668042       1.558421    
+  13     NO LABEL   5   5   .1430618E-02   .1706125       .8385190E-02
+  14     NO LABEL   5   6   .7006334E-01   .1703435       .4113061    
+  15     NO LABEL   5   7   .1516834       .1686492       .8994020    
+  16     NO LABEL   5   8  -.3185083       .1630757      -1.953131    
+  17     NO LABEL   6   1   .1238785       .6168737E-01   2.008166    
+  18     NO LABEL   6   2   .9223920E-02   .6182599E-01   .1491916    
+  19     NO LABEL   6   3  -.1493943E-01   .6199199E-01  -.2409897    
+  20     NO LABEL   6   4   .1246886E-01   .6326643E-01   .1970850    
+  21     NO LABEL   6   5   .1831652E-01   .6226463E-01   .2941722    
+  22     NO LABEL   6   6   .2440426E-02   .5925344E-01   .4118623E-01
+  23     NO LABEL   6   7  -.2022405E-01   .5807479E-01  -.3482415    
+  24     NO LABEL   6   8  -.5955546E-01   .5524737E-01  -1.077978    
+  25     CONSTANT   0   0   .7240778E-01   .6453779E-01   1.121944    
+  26     NO LABEL   9   1  -.9869217E-01   .5481668E-01  -1.800404    
+  27     NO LABEL  10   1  -.2963593E-01   .3829189E-01  -.7739480    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     NO LABEL
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     NO LABEL          .58286        .7905908    
+     NO LABEL         1.45800        .1786151    
+     NO LABEL          .82075        .5856370    
+
+
+
+
+
+
+ EQUATION    2
+ DEPENDENT VARIABLE    5     NO LABEL
+ FROM      49: 2 UNTIL      88: 4
+ TOTAL OBSERVATIONS    159     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   159     DEGREES OF FREEDOM    132
+ R**2            .29161420     RBAR**2         .15208367
+ SSR         .73585104E-02     SEE         .74663439E-02
+ DURBIN-WATSON  1.94016304
+ Q(  36)=   28.9685       SIGNIFICANCE LEVEL  .790951    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     NO LABEL   4   1   .8557757E-01   .7647231E-01   1.119066    
+   2     NO LABEL   4   2  -.1448080E-01   .7881328E-01  -.1837355    
+   3     NO LABEL   4   3  -.2396619       .7839927E-01  -3.056940    
+   4     NO LABEL   4   4  -.1155599       .8147467E-01  -1.418354    
+   5     NO LABEL   4   5  -.1512604       .8110915E-01  -1.864900    
+   6     NO LABEL   4   6   .5567019E-01   .8153506E-01   .6827761    
+   7     NO LABEL   4   7  -.4258027E-01   .8023169E-01  -.5307163    
+   8     NO LABEL   4   8   .6905586E-01   .7645568E-01   .9032142    
+   9     NO LABEL   5   1  -.6796336E-01   .1024085      -.6636494    
+  10     NO LABEL   5   2   .1736612       .1035209       1.677547    
+  11     NO LABEL   5   3   .1573321       .1032920       1.523178    
+  12     NO LABEL   5   4   .1153578       .1037353       1.112040    
+  13     NO LABEL   5   5   .5945146E-01   .1061037       .5603148    
+  14     NO LABEL   5   6  -.2441906E-01   .1059364      -.2305068    
+  15     NO LABEL   5   7   .2051098       .1048827       1.955612    
+  16     NO LABEL   5   8  -.1396325       .1014166      -1.376822    
+  17     NO LABEL   6   1   .2523810E-01   .3836328E-01   .6578714    
+  18     NO LABEL   6   2   .1563092E-01   .3844949E-01   .4065313    
+  19     NO LABEL   6   3   .8365777E-01   .3855273E-01   2.169957    
+  20     NO LABEL   6   4   .2540695E-01   .3934530E-01   .6457429    
+  21     NO LABEL   6   5   .1394129E-01   .3872228E-01   .3600327    
+  22     NO LABEL   6   6   .1053896E-01   .3684962E-01   .2859992    
+  23     NO LABEL   6   7  -.3811279E-02   .3611662E-01  -.1055270    
+  24     NO LABEL   6   8  -.1960856E-01   .3435826E-01  -.5707087    
+  25     CONSTANT   0   0  -.5708937E-01   .4013596E-01  -1.422400    
+  26     NO LABEL   9   1   .1237125E-01   .3409041E-01   .3628953    
+  27     NO LABEL  10   1   .3646333E-01   .2381367E-01   1.531194    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     NO LABEL
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     NO LABEL         2.28811        .2508335E-01
+     NO LABEL         2.23969        .2831950E-01
+     NO LABEL          .79704        .6061704    
+
+
+
+
+
+
+ EQUATION    3
+ DEPENDENT VARIABLE    6     NO LABEL
+ FROM      49: 2 UNTIL      88: 4
+ TOTAL OBSERVATIONS    159     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   159     DEGREES OF FREEDOM    132
+ R**2            .48110041     RBAR**2         .37889292
+ SSR         .65753794E-01     SEE         .22318934E-01
+ DURBIN-WATSON  1.99538674
+ Q(  36)=   33.3479       SIGNIFICANCE LEVEL  .595381    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     NO LABEL   4   1   .6228027       .2285965       2.724463    
+   2     NO LABEL   4   2   .8780893E-01   .2355943       .3727124    
+   3     NO LABEL   4   3  -.2254635       .2343567      -.9620523    
+   4     NO LABEL   4   4  -.4272505       .2435499      -1.754262    
+   5     NO LABEL   4   5  -.2604102       .2424573      -1.074046    
+   6     NO LABEL   4   6  -.1659813       .2437305      -.6810033    
+   7     NO LABEL   4   7  -.1276250       .2398344      -.5321381    
+   8     NO LABEL   4   8  -.1502828E-01   .2285468      -.6575581E-01
+   9     NO LABEL   5   1   .8054443E-01   .3061270       .2631079    
+  10     NO LABEL   5   2   .8749505E-01   .3094522       .2827418    
+  11     NO LABEL   5   3   .1677430       .3087679       .5432657    
+  12     NO LABEL   5   4   .5022997       .3100930       1.619835    
+  13     NO LABEL   5   5   .3608851       .3171728       1.137819    
+  14     NO LABEL   5   6   .2663502       .3166727       .8410898    
+  15     NO LABEL   5   7   .6185661       .3135228       1.972954    
+  16     NO LABEL   5   8  -.4620656       .3031617      -1.524156    
+  17     NO LABEL   6   1   .2920014       .1146783       2.546266    
+  18     NO LABEL   6   2  -.4867777E-01   .1149360      -.4235207    
+  19     NO LABEL   6   3   .1066664       .1152446       .9255651    
+  20     NO LABEL   6   4   .2341065E-01   .1176138       .1990468    
+  21     NO LABEL   6   5   .2371025E-01   .1157514       .2048376    
+  22     NO LABEL   6   6   .1869590       .1101536       1.697258    
+  23     NO LABEL   6   7  -.4826375E-01   .1079624      -.4470421    
+  24     NO LABEL   6   8   .4868119E-01   .1027062       .4739850    
+  25     CONSTANT   0   0  -.2763505       .1199773      -2.303357    
+  26     NO LABEL   9   1  -.1535396       .1019055      -1.506686    
+  27     NO LABEL  10   1   .1956907       .7118553E-01   2.749024    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     NO LABEL
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     NO LABEL         1.78075        .8626656E-01
+     NO LABEL         1.65918        .1142445    
+     NO LABEL         1.10281        .3654027    
+
+
+
+ dis ' Epsilon variance-covariance matrix: '
+  Epsilon variance-covariance matrix:  
+ vcv(matrix=veps) n1 n2 ;#ieps1 to ieps2
+
+          COVARIANCE/CORRELATION MATRIX
+     VARIABLE           NO LABEL     NO LABEL     NO LABEL
+           SERIES LAG   11   0       12   0       13   0
+     NO LABEL  11   0   .11966E-03   .49709       .64505    
+     NO LABEL  12   0   .36992E-04   .46280E-04   .45493    
+     NO LABEL  13   0   .14349E-03   .62936E-04   .41355E-03
+
+
+
+ dis ' Log determinant of VCV matrix = ' detln
+  Log determinant of VCV matrix =    -27.666     
+ dim sdm(nv,nv) sdmc(nv,nv)
+ list ieqn = 1 to neq
+ mat r1=iden(1.0)
+ *******
+ * Set up for Monte-Carlo Integration
+ *******
+ ieval ndraws=500
+ ieval ncoef=nv*nlags+3
+ ieval nvd=7
+ cmom(equation=1,nodepvar,matrix=xxx) n1 n2
+
+ VARIABLES IN CROSS-MOMENT MATRIX
+ FROM      49: 2 UNTIL      88: 4
+ Series     NO LABEL (    4 )   LAGS    1 TO    8
+ Series     NO LABEL (    5 )   LAGS    1 TO    8
+ Series     NO LABEL (    6 )   LAGS    1 TO    8
+ Series     CONSTANT (    0 )
+ Series     NO LABEL (    9 )   LAGS    1 TO    1
+ Series     NO LABEL (   10 )   LAGS    1 TO    1
+ declare rect sxx(ncoef,ncoef) sinv(nv,nv) swish(nv,nv) $
+    ranw(nv,nobs) rantr(nobs,nv) ranc(ncoef,nv) sxxuover
+ declare vector betadraw betaols(ncoef*nv) sxxu(ncoef*nv)
+ dim ivd(nvd)
+ * variance decomposition horizons to be tabulated
+ read(unit=input) ivd
+  1 4 8 12 16 20 24
+ overlay sxxu(1) with sxxuover(ncoef,nv)
+ overlay coeff(1,1) with betadraw(ncoef*nv)
+ matrix sxx = tr( decomp( inv(xxx) ) )
+ matrix sinv = tr(decomp(inv(veps)))
+ matrix betaols = betadraw
+ *
+ declare rect firstir(nimp,nv**2) secondir(nimp,nv**2) $
+    firstvd(fix(ivd(nvd))+1,nv*nk) secondvd(fix(ivd(nvd))+1,nv*nk) $
+    irbeta(nimp,nv**2) vdbeta(fix(ivd(nvd))+1,nv*nk) $
+    irmse(nimp,nv**2) vdmse(fix(ivd(nvd))+1,nv*nk)
+ declare vector firstbe(ncoef*nv) secondbe(ncoef*nv)
+ matrix firstir=secondir=irbeta=irmse=const(0.0)
+ matrix firstvd=secondvd=vdbeta=vdmse=const(0.0)
+ matrix firstbe=secondbe=const(0.0)
+ *****
+ * Do loop over Monte-Carlo draws
+ *****
+ 142447 do draws = 1,ndraws+1
+ 142463    matrix ranw = ran(1.0/sqrt(nobs))
+ 142483    matrix rantr = tr(ranw)*sinv
+ 142505    matrix swish = decomp(inv( (tr(rantr)*rantr) ))
+ 142529    matrix ranc = ran(1.0)
+ 142544    matrix sxxuover = tr(sxx)*ranc
+ 142566    if draws>1
+ 142576       matrix betadraw = betaols+kronid(swish,sxxu)
+ 142603    else
+ 142605       matrix betadraw = betaols
+ 142620    if draws>1 {
+ 142630       matrix firstbe = firstbe+betadraw
+ 142651       ewise secondbe(i) = secondbe(i)+betadraw(i)**2
+ 142675       }
+ 142675    matrix r1=iden(1.0)
+ 142690    do i=1,nv
+ 142703     impulse(noprint,decomp=r1) neq nimp i
+ 142723     cards ieqn (ic1+(i-1)*nv+ieqn-1) 1 ieqn
+ 142753    end do i
+ 142755 *******
+ 142755 * CTAHAT.PGM JHS 3/6/87, mww 4/20/89
+ 142755 * Estimates parameters of A matrix, construct rotation
+ 142755 *   estimate initial H matrix from C(1)'C(1) null right eigenvectors
+ 142755 *   Must have run CTVECM first
+ 142755 *
+ 142755 *       First compute cumulative C(L), overwrite current C(L)
+ 142755 *
+ 142755 do i=1,nv
+ 142768  do j=1,nv
+ 142781   ieval k=IC1+(j-1)*nv+i-1
+ 142803   acc k 1 nimp k 1
+ 142821   eval c1(i,j) = k(nimp)
+ 142836  end do j
+ 142838 end do i
+ 142840 mat sdm = c1*veps*(tr(c1))       ;* Spectral Density matrix at zero
+ 142868 mat sdmc=sdm
+ 142883 do i = 1, nv;
+ 142896  do j = 1,i;
+ 142909   eval sdmc(i,j)=sdmc(i,j)/(sqrt(sdm(i,i)*sdm(j,j)))
+ 142942 end do j
+ 142944 end do i
+ 142946 mat cc = tr(c1)*c1
+ 142968 eigen cc evals hinv
+ 142983 mat h=inv(hinv)
+ 142999 *
+ 142999 *   Estimate unknown parms using cholesky solution algorithm based on A0
+ 142999 *
+ 142999 mat r2=a0*inv(tr(a0)*a0)
+ 143028 mat v3=tr(r2)*c1*veps*tr(c1)*r2
+ 143069 mat aparm=decomp(v3)
+ 143085 mat v3=iden(1.0)
+ 143100 do i=1,nk ;eval v3(i,i)=1/aparm(i,i) ;end do i
+ 143134 mat aparm=aparm*v3
+ 143155 mat ahat=a0*aparm
+ 143176 * compute HS matrix, rotated s.t. C(1)HSINV=[AHAT 0]
+ 143176 *   starting from H: C(1)HINV=[AHAT*R11  0]
+ 143176 mat r0=c1*hinv
+ 143197 mat r3=inv(tr(ahat)*ahat)*(tr(ahat)*c1*hinv*tr(sel))
+ 143246 mat r1=iden(1.0)
+ 143261 do i=1,nk
+ 143274  do j=1,nk ;eval r1(i,j)=r3(i,j) ;end do j
+ 143305 end do i
+ 143307 mat hs=r1*h
+ 143328 mat hsinv=inv(hs)
+ 143344 *
+ 143344 * Orthogonalize innovations, with permanent components ordered first
+ 143344 *
+ 143344 mat v2=hs*veps*tr(hs)
+ 143372 mat r0=decomp(v2)
+ 143388 mat r1=iden(1.0)
+ 143403 do i=1,nv
+ 143416  eval r1(i,i)=r0(i,i) ;eval sigeta(i)=r0(i,i)*r0(i,i)
+ 143454 end do i
+ 143456 mat r0=inv(r0)
+ 143472 mat hs=r1*r0*hs
+ 143499 mat hsinv=inv(hs)
+ 143515 mat r0=c1*hsinv
+ 143536 mat r0=hs*veps*tr(hs)
+ 143564 ********
+ 143564 *   CTIR.PGM                             JHS 3/6/87
+ 143564 * Cumulative IR's to rotated shocks, permanent shocks being first two
+ 143564 *    These IR weights will be used in computing k-step ahead forecast er
+ 143564 *
+ 143564 *    Must have run CTVECM, CTAHAT first
+ 143564 *    n.b. This program overwrites existing MA representation C(L)
+ 143564 *         with C(L)*HSINV  (Cumulative), which are eta impulse responses
+ 143564 *
+ 143564 do i9=1,nimp
+ 143577  do i=1,nv
+ 143590   do j=1,nv
+ 143603    ieval k=IC1+(j-1)*nv+i-1
+ 143625    eval r0(i,j)=k(i9)
+ 143640   end do j
+ 143642  end do i
+ 143644  mat r0=r0*hsinv
+ 143665  do i=1,nv
+ 143678   do j=1,nv
+ 143691    ieval k=IC1+(j-1)*nv+i-1
+ 143713    eval k(i9)=r0(i,j)
+ 143728 *****
+ 143728 * accumulate impulses for Monte-Carlo
+ 143728 *****
+ 143728    ieval impno=(j-1)*nv+i
+ 143744    if draws>1 {
+ 143754       eval firstir(i9,impno) = firstir(i9,impno)+r0(i,j)
+ 143778       eval secondir(i9,impno) = secondir(i9,impno)+r0(i,j)**2
+ 143805       }
+ 143805    else
+ 143807       eval irbeta(i9,impno) = r0(i,j)
+ 143823 *****
+ 143823   end do j
+ 143825  end do i
+ 143827 end do i9
+ 143829 ************
+ 143829 *--------------------------------------------------*
+ 143829 *  Variance Decompositions
+ 143829 *
+ 143829 ieval kferr=8 ;
+ 143836 *     CTDECOMP.PGM                     JHS 3/6/87
+ 143836 *
+ 143836 * Compute k-step ahead variance decompositions, forecast errors
+ 143836 *    First compute variance decompositions
+ 143836 *
+ 143836 *    Must have run:  CTVECM, CTAHAT, CTIR
+ 143836 *
+ 143836 mat qk=const(0.0)
+ 143851 do i9=1,fix(ivd(nvd))
+ 143868  do i=1,nv
+ 143881   do j=1,nv
+ 143894    ieval k=IC1+nv*(j-1)+i-1
+ 143916    eval qk(i,j)=qk(i,j)+k(i9)*k(i9)
+ 143946   end do j
+ 143948  end do i
+ 143950  mat r1=const(0.0)
+ 143965  do i=1,nv
+ 143978   do j=1,nv
+ 143991    eval r1(i,i)=r1(i,i)+qk(i,j)*sigeta(j)
+ 144021   end do j
+ 144023  end do i
+ 144025  do i=1,nv
+ 144038   do j=1,nk
+ 144051    ieval k=iferr1+(j-1)*nv+i-1
+ 144073    eval k(i9)=(qk(i,j)*sigeta(j))/r1(i,i)
+ 144102    ieval vdno=(j-1)*nv+i
+ 144118    if draws>1 {
+ 144128       eval firstvd(i9,vdno)=firstvd(i9,vdno)+k(i9)
+ 144151       eval secondvd(i9,vdno)=secondvd(i9,vdno)+k(i9)**2
+ 144177       }
+ 144177    else
+ 144179       eval vdbeta(i9,vdno)=k(i9)
+ 144194   end do j
+ 144196  end do i
+ 144198 end do i9
+ 144200 *    compute variance decomposition at infinity
+ 144200 ieval i9=i9+1
+ 144210 do i=1,nv
+ 144223  eval s8=0
+ 144230  do j=1,nk ;eval s8=s8+ahat(i,j)*ahat(i,j)*sigeta(j) ;end do j
+ 144274  do j=1,nk
+ 144287   ieval k=iferr1+(j-1)*nv+i-1
+ 144309   eval k(i9)=ahat(i,j)*ahat(i,j)*sigeta(j)/s8
+ 144341   ieval vdno=(j-1)*nv+i
+ 144357   if draws>1 {
+ 144367      eval firstvd(i9,vdno)=firstvd(i9,vdno)+k(i9)
+ 144390      eval secondvd(i9,vdno)=secondvd(i9,vdno)+k(i9)**2
+ 144416      }
+ 144416   else
+ 144418      eval vdbeta(i9,vdno)=k(i9)
+ 144433  end do j
+ 144435 end do i
+ 144437 ********
+ 144437 end do draws
+ matrix firstir=scale(1.0/ndraws)*firstir
+ matrix secondir=scale(1.0/ndraws)*secondir
+ matrix firstvd=scale(1.0/ndraws)*firstvd
+ matrix secondvd=scale(1.0/ndraws)*secondvd
+ ewise irmse(i,j)=sqrt(secondir(i,j)-2.0*firstir(i,j)*irbeta(i,j)+ $
+                  irbeta(i,j)**2)
+ ewise vdmse(i,j)=sqrt(secondvd(i,j)-2.0*firstvd(i,j)*vdbeta(i,j)+ $
+                  vdbeta(i,j)**2)
+ ewise secondir(i,j)=sqrt(secondir(i,j)-firstir(i,j)**2)
+ ewise secondvd(i,j)=sqrt(secondvd(i,j)-firstvd(i,j)**2)
+ matrix firstbe=scale(1.0/ndraws)*firstbe
+ matrix secondbe=scale(1.0/ndraws)*secondbe
+ ewise secondbe(i)=sqrt(secondbe(i)-firstbe(i)**2)
+ *
+ * print out IR's to first two permanent shocks
+ *
+ declare rect dsplirf(nimp,1+nv) dsplirs(nimp,1+nv)
+ 144367 do i=1,nk
+ 144380   dis ' '
+ 144387   dis ' '
+ 144394   dis ' BHat IRs to permanent shock number:' i
+ 144404   dis ' '
+ 144411   ieval ii=(i-1)*nv
+ 144424   do j=1,nimp
+ 144437     eval dsplirf(j,1)=j ; eval dsplirs(j,1)=j
+ 144461     do k=1,nv
+ 144474       eval dsplirf(j,1+k)=irbeta(j,ii+k)
+ 144496       eval dsplirs(j,1+k)=irmse(j,ii+k)
+ 144518     end do k
+ 144520   end do j
+ 144522   write(format='(f8.0,7f10.5)') dsplirf
+ 144534   dis ' RMSE IRs to permanent shock number:' i
+ 144544   dis ' '
+ 144551   write(format='(f8.0,7f10.5)') dsplirs
+ 144563   dis ' '
+ 144570   dis ' Mean IRs to permanent shock number:' i
+ 144580   dis ' '
+ 144587   do j=1,nimp
+ 144600     eval dsplirf(j,1)=j ; eval dsplirs(j,1)=j
+ 144624     do k=1,nv
+ 144637       eval dsplirf(j,1+k)=firstir(j,ii+k)
+ 144659       eval dsplirs(j,1+k)=secondir(j,ii+k)
+ 144681     end do k
+ 144683   end do j
+ 144685   write(format='(f8.0,7f10.5)') dsplirf
+ 144697   dis ' SDev IRs to permanent shock number:' i
+ 144707   dis ' '
+ 144714   write(format='(f8.0,7f10.5)') dsplirs
+ 144726 end do i
+  
+  
+  BHat IRs to permanent shock number:       1 
+  
+      1.    .94768    .82341    .90488
+      2.   1.33660    .87448   1.81494
+      3.   1.51843   1.05895   2.27366
+      4.   1.56683   1.04728   2.33266
+      5.   1.54878   1.06821   2.20707
+      6.   1.34515    .96832   1.95008
+      7.   1.31429    .93824   1.75936
+      8.   1.32629   1.03945   1.98611
+      9.   1.17528    .95038   1.59243
+     10.   1.09413    .97033   1.36412
+     11.   1.00242    .94735   1.12095
+     12.   1.00214    .93562    .97384
+     13.    .97823    .92056    .89604
+     14.   1.02731    .93430    .99724
+     15.   1.06887    .95165   1.06066
+     16.   1.03075    .92605   1.00920
+     17.   1.03833    .93496    .97542
+     18.   1.01639    .92614    .91143
+     19.   1.00069    .92154    .85942
+     20.    .99021    .92184    .85553
+     21.    .99269    .93142    .87151
+     22.    .98245    .93319    .88331
+     23.    .97482    .93831    .87958
+     24.    .98056    .94846    .89975
+     25.    .98537    .95755    .91783
+     26.    .99544    .96729    .95116
+     27.   1.00782    .97836    .99118
+     28.   1.01680    .98755   1.02859
+     29.   1.02036    .99250   1.04774
+     30.   1.02257    .99783   1.06299
+     31.   1.02446   1.00162   1.07090
+     32.   1.02437   1.00414   1.07496
+     33.   1.02404   1.00615   1.07682
+     34.   1.02339   1.00735   1.07697
+     35.   1.02106   1.00738   1.07136
+     36.   1.01783   1.00614   1.06248
+     37.   1.01564   1.00531   1.05294
+     38.   1.01307   1.00365   1.04296
+     39.   1.01088   1.00210   1.03319
+     40.   1.00870   1.00046   1.02432
+     41.   1.00644    .99877   1.01510
+     42.   1.00385    .99698   1.00596
+     43.   1.00155    .99541    .99738
+     44.    .99973    .99423    .99070
+     45.    .99819    .99330    .98536
+     46.    .99716    .99279    .98205
+     47.    .99650    .99262    .98021
+     48.    .99614    .99270    .97964
+     49.    .99608    .99304    .98011
+     50.    .99637    .99363    .98177
+     51.    .99693    .99440    .98429
+     52.    .99761    .99526    .98743
+     53.    .99840    .99621    .99087
+     54.    .99916    .99713    .99433
+     55.    .99987    .99801    .99752
+     56.   1.00051    .99882   1.00044
+     57.   1.00108    .99954   1.00297
+     58.   1.00155   1.00014   1.00506
+     59.   1.00190   1.00061   1.00665
+     60.   1.00213   1.00096   1.00772
+     61.   1.00223   1.00118   1.00826
+     62.   1.00223   1.00128   1.00833
+     63.   1.00213   1.00128   1.00799
+     64.   1.00197   1.00119   1.00734
+     65.   1.00174   1.00103   1.00642
+     66.   1.00146   1.00083   1.00534
+     67.   1.00116   1.00059   1.00413
+     68.   1.00084   1.00034   1.00290
+     69.   1.00054   1.00009   1.00169
+     70.   1.00026    .99986   1.00059
+     71.   1.00001    .99966    .99962
+     72.    .99980    .99949    .99881
+     73.    .99963    .99936    .99819
+     74.    .99951    .99927    .99774
+     75.    .99944    .99922    .99748
+     76.    .99940    .99921    .99739
+     77.    .99941    .99923    .99745
+     78.    .99944    .99928    .99764
+     79.    .99950    .99936    .99792
+     80.    .99958    .99944    .99827
+     81.    .99967    .99954    .99866
+     82.    .99976    .99965    .99906
+     83.    .99985    .99975    .99946
+     84.    .99994    .99984    .99983
+     85.   1.00002    .99992   1.00015
+     86.   1.00008    .99999   1.00043
+     87.   1.00013   1.00005   1.00064
+     88.   1.00017   1.00009   1.00079
+     89.   1.00019   1.00012   1.00088
+     90.   1.00020   1.00013   1.00091
+     91.   1.00019   1.00013   1.00089
+     92.   1.00017   1.00012   1.00083
+     93.   1.00015   1.00011   1.00073
+     94.   1.00012   1.00008   1.00060
+     95.   1.00009   1.00005   1.00047
+     96.   1.00005   1.00002   1.00032
+     97.   1.00002    .99999   1.00018
+     98.    .99998    .99996   1.00005
+     99.    .99995    .99993    .99993
+    100.    .99993    .99991    .99983
+    101.    .99991    .99989    .99975
+    102.    .99989    .99988    .99969
+    103.    .99988    .99987    .99966
+    104.    .99988    .99987    .99964
+    105.    .99988    .99987    .99964
+    106.    .99988    .99987    .99966
+    107.    .99989    .99988    .99969
+    108.    .99990    .99989    .99973
+    109.    .99991    .99990    .99978
+    110.    .99992    .99991    .99982
+    111.    .99993    .99992    .99987
+    112.    .99994    .99994    .99992
+    113.    .99995    .99995    .99996
+    114.    .99996    .99995    .99999
+    115.    .99997    .99996   1.00002
+    116.    .99997    .99997   1.00004
+    117.    .99997    .99997   1.00005
+    118.    .99998    .99997   1.00006
+    119.    .99998    .99997   1.00006
+    120.    .99997    .99997   1.00005
+
+
+
+  RMSE IRs to permanent shock number:       1 
+  
+      1.    .45365    .30994    .66045
+      2.    .58016    .31222   1.03146
+      3.    .64063    .36629   1.11679
+      4.    .61609    .36355   1.06009
+      5.    .55674    .36592    .91648
+      6.    .47379    .36227    .83423
+      7.    .45762    .34403    .83309
+      8.    .46416    .38321    .91533
+      9.    .40860    .33699    .81163
+     10.    .38067    .32870    .73117
+     11.    .33366    .30734    .65244
+     12.    .31035    .28313    .57480
+     13.    .27750    .26664    .50818
+     14.    .26703    .25119    .46035
+     15.    .26329    .24595    .43740
+     16.    .24958    .23000    .43308
+     17.    .23855    .22171    .41627
+     18.    .22518    .21203    .39280
+     19.    .21310    .20304    .37058
+     20.    .20161    .19656    .34938
+     21.    .19552    .19328    .33061
+     22.    .18676    .18927    .31569
+     23.    .18143    .18745    .30421
+     24.    .17926    .18706    .29785
+     25.    .17838    .18748    .29106
+     26.    .17858    .18872    .28935
+     27.    .17888    .19018    .28864
+     28.    .17932    .19159    .29022
+     29.    .17776    .19135    .28903
+     30.    .17688    .19126    .28600
+     31.    .17599    .19013    .28499
+     32.    .17303    .18780    .27749
+     33.    .16917    .18402    .26637
+     34.    .16342    .17965    .25141
+     35.    .15668    .17420    .23257
+     36.    .15045    .16840    .21228
+     37.    .14435    .16303    .19739
+     38.    .13934    .15759    .18620
+     39.    .13454    .15275    .17831
+     40.    .13000    .14808    .17439
+     41.    .12594    .14410    .17216
+     42.    .12252    .14063    .17119
+     43.    .11968    .13776    .16901
+     44.    .11740    .13557    .16636
+     45.    .11537    .13386    .16128
+     46.    .11337    .13267    .15589
+     47.    .11173    .13205    .14822
+     48.    .11069    .13186    .14329
+     49.    .11091    .13252    .14073
+     50.    .11208    .13348    .14365
+     51.    .11421    .13487    .14996
+     52.    .11644    .13632    .15937
+     53.    .11882    .13748    .16823
+     54.    .12096    .13835    .17691
+     55.    .12264    .13858    .18315
+     56.    .12373    .13804    .18614
+     57.    .12359    .13673    .18529
+     58.    .12215    .13439    .17937
+     59.    .11959    .13132    .16987
+     60.    .11598    .12759    .15733
+     61.    .11203    .12341    .14399
+     62.    .10784    .11913    .13132
+     63.    .10378    .11488    .12143
+     64.    .10002    .11089    .11517
+     65.    .09657    .10733    .11291
+     66.    .09349    .10421    .11340
+     67.    .09081    .10170    .11458
+     68.    .08829    .09964    .11508
+     69.    .08604    .09819    .11317
+     70.    .08385    .09722    .10925
+     71.    .08203    .09685    .10297
+     72.    .08066    .09702    .09635
+     73.    .08024    .09788    .09082
+     74.    .08094    .09925    .08991
+     75.    .08292    .10119    .09436
+     76.    .08593    .10337    .10457
+     77.    .08973    .10571    .11759
+     78.    .09366    .10781    .13152
+     79.    .09757    .10954    .14393
+     80.    .10082    .11059    .15389
+     81.    .10329    .11083    .16004
+     82.    .10461    .11014    .16216
+     83.    .10470    .10851    .15978
+     84.    .10352    .10592    .15322
+     85.    .10115    .10259    .14304
+     86.    .09771    .09860    .13016
+     87.    .09354    .09427    .11599
+     88.    .08875    .08978    .10209
+     89.    .08381    .08547    .09039
+     90.    .07886    .08148    .08249
+     91.    .07427    .07810    .07921
+     92.    .07013    .07537    .07954
+     93.    .06668    .07344    .08146
+     94.    .06383    .07221    .08297
+     95.    .06175    .07181    .08253
+     96.    .06034    .07206    .07981
+     97.    .05983    .07310    .07503
+     98.    .06019    .07476    .06994
+     99.    .06178    .07711    .06699
+    100.    .06450    .07993    .06954
+    101.    .06843    .08317    .07851
+    102.    .07323    .08651    .09275
+    103.    .07861    .08978    .10924
+    104.    .08399    .09260    .12569
+    105.    .08901    .09485    .13995
+    106.    .09312    .09618    .15070
+    107.    .09608    .09655    .15680
+    108.    .09753    .09582    .15780
+    109.    .09742    .09407    .15339
+    110.    .09568    .09136    .14400
+    111.    .09249    .08796    .13024
+    112.    .08804    .08406    .11344
+    113.    .08277    .08006    .09532
+    114.    .07702    .07622    .07847
+    115.    .07137    .07294    .06611
+    116.    .06614    .07035    .06130
+    117.    .06183    .06871    .06376
+    118.    .05848    .06794    .06991
+    119.    .05626    .06809    .07572
+    120.    .05492    .06899    .07887
+
+
+
+  
+  Mean IRs to permanent shock number:       1 
+  
+      1.    .74100    .66811    .65634
+      2.   1.05256    .70731   1.37020
+      3.   1.21567    .86926   1.75944
+      4.   1.25768    .86284   1.82858
+      5.   1.25793    .89076   1.76149
+      6.   1.10608    .81526   1.59264
+      7.   1.09555    .79993   1.45612
+      8.   1.11153    .88715   1.66114
+      9.   1.00508    .82122   1.35712
+     10.    .95351    .84713   1.20419
+     11.    .89151    .83835   1.02964
+     12.    .90034    .83560    .92649
+     13.    .89090    .83205    .87237
+     14.    .93237    .85004    .96545
+     15.    .97160    .86963   1.01248
+     16.    .94299    .85249    .97489
+     17.    .95886    .86947    .95688
+     18.    .94520    .86335    .91416
+     19.    .94052    .86543    .87757
+     20.    .93551    .86729    .88334
+     21.    .94396    .87847    .89209
+     22.    .93358    .87874    .89949
+     23.    .93087    .88508    .88813
+     24.    .93418    .89328    .90222
+     25.    .93765    .89978    .90279
+     26.    .94382    .90683    .92421
+     27.    .95352    .91634    .94652
+     28.    .95932    .92176    .97210
+     29.    .96180    .92652    .97968
+     30.    .96304    .93064    .99215
+     31.    .96683    .93512    .99581
+     32.    .96637    .93687    .99976
+     33.    .96960    .94124   1.00261
+     34.    .97030    .94297   1.00774
+     35.    .97129    .94501   1.00496
+     36.    .96932    .94528   1.00393
+     37.    .97069    .94698    .99901
+     38.    .96952    .94667    .99663
+     39.    .97050    .94789    .99204
+     40.    .97065    .94824    .99172
+     41.    .97174    .94918    .98757
+     42.    .97081    .94891    .98562
+     43.    .97178    .94994    .98136
+     44.    .97165    .94971    .98033
+     45.    .97282    .95073    .97800
+     46.    .97306    .95104    .97868
+     47.    .97450    .95221    .97746
+     48.    .97409    .95243    .97729
+     49.    .97459    .95348    .97475
+     50.    .97408    .95359    .97411
+     51.    .97449    .95461    .97206
+     52.    .97402    .95500    .97279
+     53.    .97483    .95623    .97228
+     54.    .97455    .95682    .97341
+     55.    .97536    .95828    .97351
+     56.    .97536    .95899    .97510
+     57.    .97661    .96046    .97567
+     58.    .97698    .96138    .97875
+     59.    .97854    .96299    .98063
+     60.    .97922    .96381    .98368
+     61.    .98057    .96545    .98556
+     62.    .98106    .96627    .98797
+     63.    .98233    .96758    .98877
+     64.    .98259    .96831    .99076
+     65.    .98376    .96956    .99151
+     66.    .98405    .97004    .99301
+     67.    .98496    .97105    .99312
+     68.    .98507    .97149    .99407
+     69.    .98582    .97224    .99327
+     70.    .98571    .97238    .99317
+     71.    .98623    .97310    .99208
+     72.    .98597    .97304    .99155
+     73.    .98628    .97349    .98977
+     74.    .98573    .97343    .98894
+     75.    .98591    .97383    .98702
+     76.    .98533    .97363    .98583
+     77.    .98545    .97412    .98426
+     78.    .98505    .97412    .98393
+     79.    .98540    .97462    .98292
+     80.    .98519    .97481    .98337
+     81.    .98580    .97559    .98348
+     82.    .98593    .97590    .98456
+     83.    .98677    .97680    .98537
+     84.    .98715    .97735    .98744
+     85.    .98825    .97832    .98882
+     86.    .98873    .97885    .99109
+     87.    .98983    .97992    .99280
+     88.    .99037    .98041    .99500
+     89.    .99141    .98131    .99629
+     90.    .99182    .98176    .99822
+     91.    .99279    .98255    .99920
+     92.    .99308    .98275   1.00038
+     93.    .99380    .98340   1.00066
+     94.    .99390    .98350   1.00119
+     95.    .99441    .98388   1.00049
+     96.    .99422    .98382   1.00015
+     97.    .99449    .98411    .99894
+     98.    .99414    .98387    .99793
+     99.    .99418    .98405    .99618
+    100.    .99368    .98385    .99505
+    101.    .99370    .98400    .99321
+    102.    .99318    .98381    .99206
+    103.    .99322    .98412    .99071
+    104.    .99289    .98407    .99018
+    105.    .99313    .98448    .98945
+    106.    .99300    .98467    .98981
+    107.    .99353    .98532    .99001
+    108.    .99368    .98563    .99107
+    109.    .99439    .98645    .99204
+    110.    .99477    .98695    .99385
+    111.    .99569    .98782    .99529
+    112.    .99618    .98838    .99746
+    113.    .99719    .98932    .99924
+    114.    .99778    .98985   1.00141
+    115.    .99877    .99071   1.00297
+    116.    .99930    .99119   1.00492
+    117.   1.00024    .99191   1.00605
+    118.   1.00064    .99221   1.00733
+    119.   1.00139    .99281   1.00788
+    120.   1.00163    .99294   1.00844
+
+
+
+  SDev IRs to permanent shock number:       1 
+  
+      1.    .40384    .26822    .61190
+      2.    .50588    .26369    .93065
+      3.    .56457    .31335    .99136
+      4.    .53291    .31329    .93258
+      5.    .47473    .32002    .80087
+      6.    .40905    .32835    .75377
+      7.    .40195    .31500    .77594
+      8.    .41149    .35165    .85571
+      9.    .37147    .31126    .77677
+     10.    .35374    .30474    .71347
+     11.    .31468    .28736    .64602
+     12.    .29318    .26488    .57284
+     13.    .26340    .25152    .50763
+     14.    .24959    .23664    .45925
+     15.    .24467    .23187    .43474
+     16.    .23364    .21792    .43172
+     17.    .22492    .21181    .41585
+     18.    .21363    .20252    .39279
+     19.    .20443    .19513    .37013
+     20.    .19405    .18884    .34827
+     21.    .18934    .18589    .32997
+     22.    .18026    .18127    .31527
+     23.    .17603    .17973    .30409
+     24.    .17316    .17874    .29784
+     25.    .17188    .17836    .29067
+     26.    .17096    .17877    .28809
+     27.    .17045    .17978    .28516
+     28.    .16986    .17993    .28467
+     29.    .16784    .17961    .28090
+     30.    .16656    .17906    .27709
+     31.    .16629    .17812    .27492
+     32.    .16302    .17534    .26711
+     33.    .16017    .17219    .25583
+     34.    .15456    .16772    .24169
+     35.    .14857    .16265    .22289
+     36.    .14242    .15702    .20405
+     37.    .13717    .15223    .18988
+     38.    .13236    .14692    .18035
+     39.    .12834    .14280    .17349
+     40.    .12430    .13857    .17132
+     41.    .12106    .13530    .16994
+     42.    .11798    .13216    .16998
+     43.    .11591    .13004    .16825
+     44.    .11399    .12805    .16603
+     45.    .11254    .12691    .16111
+     46.    .11077    .12593    .15585
+     47.    .10955    .12572    .14819
+     48.    .10847    .12556    .14327
+     49.    .10881    .12648    .14063
+     50.    .10984    .12733    .14345
+     51.    .11198    .12887    .14946
+     52.    .11403    .13023    .15870
+     53.    .11646    .13154    .16720
+     54.    .11843    .13235    .17567
+     55.    .12017    .13277    .18156
+     56.    .12115    .13217    .18440
+     57.    .12114    .13102    .18327
+     58.    .11966    .12868    .17743
+     59.    .11729    .12582    .16787
+     60.    .11369    .12206    .15548
+     61.    .10992    .11813    .14219
+     62.    .10574    .11387    .12973
+     63.    .10187    .10983    .11990
+     64.    .09812    .10591    .11397
+     65.    .09488    .10261    .11192
+     66.    .09185    .09956    .11273
+     67.    .08936    .09732    .11405
+     68.    .08687    .09537    .11474
+     69.    .08477    .09416    .11286
+     70.    .08258    .09325    .10900
+     71.    .08087    .09314    .10269
+     72.    .07946    .09335    .09608
+     73.    .07912    .09440    .09043
+     74.    .07976    .09582    .08947
+     75.    .08181    .09796    .09378
+     76.    .08477    .10015    .10393
+     77.    .08863    .10269    .11685
+     78.    .09255    .10484    .13081
+     79.    .09655    .10671    .14315
+     80.    .09979    .10781    .15317
+     81.    .10236    .10822    .15931
+     82.    .10370    .10755    .16151
+     83.    .10388    .10605    .15916
+     84.    .10272    .10350    .15272
+     85.    .10046    .10029    .14259
+     86.    .09705    .09630    .12983
+     87.    .09297    .09210    .11573
+     88.    .08821    .08760    .10192
+     89.    .08335    .08337    .09027
+     90.    .07841    .07938    .08245
+     91.    .07390    .07610    .07919
+     92.    .06977    .07334    .07954
+     93.    .06637    .07151    .08146
+     94.    .06352    .07028    .08297
+     95.    .06149    .06996    .08253
+     96.    .06005    .07022    .07981
+     97.    .05957    .07135    .07502
+     98.    .05991    .07301    .06990
+     99.    .06151    .07545    .06688
+    100.    .06419    .07830    .06938
+    101.    .06815    .08164    .07823
+    102.    .07292    .08500    .09244
+    103.    .07832    .08838    .10887
+    104.    .08369    .09125    .12533
+    105.    .08876    .09359    .13958
+    106.    .09287    .09497    .15038
+    107.    .09587    .09544    .15650
+    108.    .09733    .09475    .15756
+    109.    .09727    .09311    .15319
+    110.    .09554    .09044    .14387
+    111.    .09239    .08713    .13016
+    112.    .08796    .08326    .11342
+    113.    .08272    .07936    .09532
+    114.    .07698    .07554    .07846
+    115.    .07136    .07235    .06605
+    116.    .06614    .06980    .06110
+    117.    .06183    .06823    .06348
+    118.    .05848    .06749    .06953
+    119.    .05624    .06771    .07532
+    120.    .05489    .06863    .07842
+
+
+
+ *
+ * write out VD table
+ *
+ declare rect dsplvdf(nvd+1,nv+1) dsplvds(nvd+1,nv+1)
+ 148067 do i=1,nk
+ 148080   ieval ii=(i-1)*nv
+ 148093   ieval iv=1
+ 148100   do i9=1,fix(ivd(nvd))
+ 148117     if (i9.eq.ivd(iv))
+ 148130      begin
+ 148130       eval dsplvdf(iv,1)=i9
+ 148142       eval dsplvds(iv,1)=i9
+ 148154       do j=1,nv
+ 148167         eval dsplvdf(iv,j+1)=vdbeta(i9,ii+j)
+ 148189         eval dsplvds(iv,j+1)=vdmse(i9,ii+j)
+ 148211       end do j
+ 148213       ieval iv=iv+1
+ 148223      end
+ 148223   end do i9
+ 148225   ieval i9=i9+1
+ 148235   eval dsplvdf(iv,1)=0.0
+ 148246   eval dsplvds(iv,1)=0.0
+ 148257   do j=1,nv
+ 148270     eval dsplvdf(iv,j+1)=vdbeta(i9,ii+j)
+ 148292     eval dsplvds(iv,j+1)=vdmse(i9,ii+j)
+ 148314   end do j
+ 148316   dis ' '
+ 148323   dis ' '
+ 148330   dis '                           Table' i
+ 148340   dis ' '
+ 148347   dis '      BHat Fraction of Variance Attributed to Innovation'
+ 148354   dis '                in Permanent Component #' i
+ 148364   dis ' '
+ 148371   dis '  Horizon    vble#1    vbl#2  . . . '
+ 148378   dis ' '
+ 148385   write(noskip,format='(f8.0,6f10.2)') dsplvdf
+ 148399   dis ' '
+ 148406   dis ' '
+ 148413   dis '      RMSE Fraction of Variance Attributed to Innovation'
+ 148420   dis '                in Permanent Component #' i
+ 148430   dis ' '
+ 148437   dis '  Horizon    vble#1    vbl#2  . . . '
+ 148444   dis ' '
+ 148451   write(noskip,format='(f8.0,6f10.2)') dsplvds
+ 148465   dis ' '
+ 148472   ieval iv=1
+ 148479   do i9=1,fix(ivd(nvd))
+ 148496     if (i9.eq.ivd(iv))
+ 148509      begin
+ 148509       eval dsplvdf(iv,1)=i9
+ 148521       eval dsplvds(iv,1)=i9
+ 148533       do j=1,nv
+ 148546         eval dsplvdf(iv,j+1)=firstvd(i9,ii+j)
+ 148568         eval dsplvds(iv,j+1)=secondvd(i9,ii+j)
+ 148590       end do j
+ 148592       ieval iv=iv+1
+ 148602      end
+ 148602   end do i9
+ 148604   ieval i9=i9+1
+ 148614   eval dsplvdf(iv,1)=0.0
+ 148625   eval dsplvds(iv,1)=0.0
+ 148636   do j=1,nv
+ 148649     eval dsplvdf(iv,j+1)=firstvd(i9,ii+j)
+ 148671     eval dsplvds(iv,j+1)=secondvd(i9,ii+j)
+ 148693   end do j
+ 148695  dis ' '
+ 148702  dis '      Mean Fraction of Variance Attributed to Innovation'
+ 148709  dis '                in Permanent Component #' i
+ 148719  dis ' '
+ 148726  dis '  Horizon    vble#1    vbl#2  . . . '
+ 148733  dis ' '
+ 148740  write(noskip,format='(f8.0,6f10.2)') dsplvdf
+ 148754  dis ' '
+ 148761  dis ' '
+ 148768  dis '      SDev Fraction of Variance Attributed to Innovation'
+ 148775  dis '                in Permanent Component #' i
+ 148785  dis ' '
+ 148792  dis '  Horizon    vble#1    vbl#2  . . . '
+ 148799  dis ' '
+ 148806  write(noskip,format='(f8.0,6f10.2)') dsplvds
+ 148820  dis ' '
+ 148827 end do i
+  
+  
+                            Table       1 
+  
+       BHat Fraction of Variance Attributed to Innovation 
+                 in Permanent Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.       .45       .88       .12
+      4.       .58       .89       .31
+      8.       .68       .83       .40
+     12.       .73       .83       .43
+     16.       .77       .85       .44
+     20.       .79       .87       .46
+     24.       .81       .89       .47
+      0.      1.00      1.00      1.00
+  
+  
+       RMSE Fraction of Variance Attributed to Innovation 
+                 in Permanent Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.       .28       .26       .19
+      4.       .27       .24       .23
+      8.       .23       .21       .18
+     12.       .20       .21       .17
+     16.       .19       .19       .16
+     20.       .18       .16       .16
+     24.       .17       .15       .16
+      0.       .00       .00       .00
+  
+  
+       Mean Fraction of Variance Attributed to Innovation 
+                 in Permanent Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.       .45       .72       .18
+      4.       .55       .75       .33
+      8.       .62       .71       .40
+     12.       .66       .73       .42
+     16.       .69       .76       .44
+     20.       .72       .79       .46
+     24.       .75       .82       .48
+      0.      1.00      1.00      1.00
+  
+  
+       SDev Fraction of Variance Attributed to Innovation 
+                 in Permanent Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.       .28       .21       .18
+      4.       .27       .19       .23
+      8.       .22       .18       .18
+     12.       .19       .18       .17
+     16.       .17       .16       .16
+     20.       .16       .15       .16
+     24.       .16       .13       .16
+      0.       .00       .00       .00
+  
+ write firstbe
+   .5322118E-01  -.7650524E-02  -.1154672      -.1960172      -.1188573    
+   .2453378E-01  -.2860726E-01   .1055120       .2968402       .9501393E-01
+   .5821235E-01   .2482877       .1318059E-02   .6813204E-01   .1548498    
+  -.3139576       .1234804       .8441431E-02  -.9950596E-02   .1377197E-01
+   .1833568E-01   .4160345E-02  -.2183837E-01  -.5851319E-01   .7375456E-01
+  -.1003573      -.3025496E-01   .8668856E-01  -.1018880E-01  -.2471531    
+  -.1153926      -.1545738       .5716175E-01  -.4099851E-01   .7049400E-01
+  -.6940489E-01   .1760779       .1580738       .1200894       .6174744E-01
+  -.2492313E-01   .2008095      -.1418084       .2475522E-01   .1477640E-01
+   .8578632E-01   .2523804E-01   .1429512E-01   .1054124E-01  -.5501968E-02
+  -.2003854E-01  -.5782020E-01   .1304512E-01   .3680797E-01   .6254044    
+   .8993307E-01  -.2388547      -.4123875      -.2558118      -.1667321    
+  -.1396312      -.1653941E-01   .7094893E-01   .8132798E-01   .1628547    
+   .4904846       .3708205       .2624811       .6270632      -.4561464    
+   .2947845      -.4728525E-01   .1137842       .1667575E-01   .2219912E-01
+   .1931732      -.5159281E-01   .4923696E-01  -.2719760      -.1593090    
+   .1937182    
+
+
+
+ write secondbe
+   .1183950       .1109252       .1178553       .1132718       .1234232    
+   .1138352       .1166504       .1106360       .1570273       .1585299    
+   .1526389       .1488313       .1599350       .1476790       .1557061    
+   .1510532       .5750466E-01   .5351159E-01   .5895238E-01   .5839761E-01
+   .5736226E-01   .5686148E-01   .5239767E-01   .4961340E-01   .5756837E-01
+   .5222318E-01   .3404878E-01   .7393821E-01   .7137721E-01   .6576347E-01
+   .7270496E-01   .7415398E-01   .7699452E-01   .7053153E-01   .6816255E-01
+   .9740540E-01   .9650427E-01   .9303539E-01   .9555888E-01   .9466897E-01
+   .9806833E-01   .9740562E-01   .9268749E-01   .3745206E-01   .3433169E-01
+   .3621869E-01   .3649186E-01   .3527296E-01   .3495210E-01   .3183186E-01
+   .3349747E-01   .3669335E-01   .3351899E-01   .2157913E-01   .2131586    
+   .2180917       .2130448       .2233592       .2189140       .2250013    
+   .2163104       .2040618       .2764893       .2796541       .2877741    
+   .2651355       .3051558       .2846048       .2903297       .2741995    
+   .1029465       .9962043E-01   .1015997       .1120167       .1079181    
+   .1020664       .1021995       .8920361E-01   .1058698       .9847442E-01
+   .6163784E-01
+
+
+
+ end
+
+
+          NORMAL COMPLETION OF JOB
+                    HALT AT    0
+                        0 ERRORS        0 WARNINGS
+

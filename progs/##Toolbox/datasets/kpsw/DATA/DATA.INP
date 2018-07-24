@@ -1,0 +1,14 @@
+format 10,6;
+output file=ciymrdp.prn reset;
+output on;
+load c[168,1]=c.prn;
+load i[168,1]=in.prn;
+load y[168,1]=y.prn;
+load m[168,1]=mp.prn;
+load r[168,1]=r.prn;
+load dp[168,1]=dp.prn;
+dp=dp*400;
+x=c~i~y~m~r~dp;
+x;
+end;
+

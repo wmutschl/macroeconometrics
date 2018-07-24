@@ -1,0 +1,56 @@
+DATE :  9/25/1990
+TIME :  0:56:03
+ 
+ 
+ 
+ 
+                                 Data file = D:\KPSW\DATA\CIY.PRN
+      Total number of time periods in file =  168 
+                First period used for test =    4 
+                 Last period used for test =  168 
+                     Number of data series =    3 
+                             Preprocessing = Linear detrending
+                 H0 : Number of unit roots =    3 
+ 
+ 
+ 
+      H1 : Number of unit roots = 2 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                    -25.8959             31.50 
+            1                    -30.6319             17.50 
+            2                    -30.4633             18.00 
+            3                    -32.1002             14.25 
+            4                    -31.3897             15.75 
+            5                    -29.4368             20.50 
+ 
+ 
+ 
+      H2 : Number of unit roots = 1 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                    -25.8959              1.50 
+            1                    -30.6319              0.25 
+            2                    -30.4633              0.25 
+            3                    -32.1002              0.00 
+            4                    -31.3897              0.00 
+            5                    -29.4368              0.25 
+ 
+ 
+ 
+      H3 : Number of unit roots = 0 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                     -5.8419             54.25 
+            1                     -5.2224             62.25 
+            2                     -6.4487             46.50 
+            3                     -6.2199             49.25 
+            4                     -6.2122             49.50 
+            5                     -5.5837             57.50 
+ 
+ 
+ 
+

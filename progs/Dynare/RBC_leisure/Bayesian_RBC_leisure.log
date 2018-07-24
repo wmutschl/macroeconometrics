@@ -1,0 +1,457 @@
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+Found 9 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+Computing dynamic model derivatives:
+ - order 1
+Processing outputs ...
+done
+Preprocessing completed.
+
+STEADY-STATE RESULTS:
+
+Y  		 1.1517
+C  		 0.863777
+K  		 11.517
+L  		 0.333333
+A  		 1
+R  		 0.035
+W  		 2.24582
+I  		 0.287926
+dy 		 0
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : Euler equation
+Equation number 2 : 0 : labor supply
+Equation number 3 : 0 : capital law of motion
+Equation number 4 : 0 : market clearing/resource constraint
+Equation number 5 : 0 : production function
+Equation number 6 : 0 : labor demand
+Equation number 7 : 0 : capital demand
+Equation number 8 : 0 : exogenous TFP process
+Equation number 9 : 0 : output growth
+
+
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+               0                0                0
+             0.9              0.9                0
+          0.9503           0.9503                0
+            1.06             1.06                0
+
+
+There are 1 eigenvalue(s) larger than 1 in modulus 
+for 1 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         9
+  Number of stochastic shocks: 1
+  Number of state variables:   3
+  Number of jumpers:           1
+  Number of static variables:  5
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables       eps_A
+eps_A        0.360000
+
+POLICY AND TRANSITION FUNCTIONS
+                                   Y               C               K               L               A               R               W               I              dy
+Constant                    1.151702        0.863777       11.517024        0.333333        1.000000        0.035000        2.245820        0.287926               0
+Y(-1)                              0               0               0               0               0               0               0               0       -0.868280
+K(-1)                       0.018108        0.042817        0.950291       -0.007521               0       -0.002489        0.085986       -0.024709        0.015723
+A(-1)                       1.633000        0.192402        1.440598        0.265590        0.900000        0.049627        1.394946        1.440598        1.417901
+eps_A                       1.814445        0.213780        1.600665        0.295100        1.000000        0.055141        1.549941        1.600665        1.575446
+
+
+MOMENTS OF SIMULATED VARIABLES
+VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
+Y                -0.461570        2.061185        4.248483       -0.020434       -0.201610
+C                -0.085871        0.776006        0.602185        0.045307       -1.509450
+K                -7.350123       15.675210      245.712218        0.079037       -1.572921
+L                 0.266365        0.309956        0.096073       -0.028034       -0.415779
+A                 0.297203        1.083216        1.173358       -0.018553       -0.153323
+R                 0.042712        0.062231        0.003873       -0.057908       -0.741325
+W                -0.448864        2.432748        5.918262       -0.012686       -0.859415
+I                -0.375699        1.672358        2.796780       -0.020256       -0.257472
+dy                0.042645        0.969723        0.940363        0.148049        0.178284
+
+
+CORRELATION OF SIMULATED VARIABLES
+VARIABLE         Y       C       K       L       A       R       W       I      dy
+Y           1.0000  0.6420  0.4902  0.8696  0.9909  0.7000  0.9057  0.9346  0.3035
+C           0.6420  1.0000  0.9830  0.1797  0.5329 -0.0981  0.9065  0.3273 -0.0110
+K           0.4902  0.9830  1.0000 -0.0042  0.3682 -0.2793  0.8134  0.1480 -0.0853
+L           0.8696  0.1797 -0.0042  1.0000  0.9282  0.9614  0.5783  0.9884  0.3966
+A           0.9909  0.5329  0.3682  0.9282  1.0000  0.7898  0.8403  0.9740  0.3369
+R           0.7000 -0.0981 -0.2793  0.9614  0.7898  1.0000  0.3313  0.9083  0.4043
+W           0.9057  0.9065  0.8134  0.5783  0.8403  0.3313  1.0000  0.6957  0.1611
+I           0.9346  0.3273  0.1480  0.9884  0.9740  0.9083  0.6957  1.0000  0.3792
+dy          0.3035 -0.0110 -0.0853  0.3966  0.3369  0.4043  0.1611  0.3792  1.0000
+
+
+AUTOCORRELATION OF SIMULATED VARIABLES
+VARIABLE         1       2       3       4       5
+Y           0.8441  0.6949  0.5499  0.4872  0.4154
+C           0.9775  0.9519  0.9199  0.8894  0.8561
+K           0.9890  0.9728  0.9498  0.9230  0.8937
+L           0.8042  0.6177  0.4417  0.3759  0.2981
+A           0.8267  0.6610  0.5010  0.4347  0.3583
+R           0.8190  0.6475  0.4888  0.4334  0.3657
+W           0.9162  0.8353  0.7530  0.7080  0.6572
+I           0.8077  0.6243  0.4493  0.3813  0.3017
+dy         -0.0014 -0.0344 -0.2791  0.0558 -0.1050
+Initial value of the log posterior (or likelihood): -307.0603
+-----------------
+f at the beginning of new iteration,       307.0602990146
+Predicted improvement:        3.897508137
+lambda =          1; f =          300.3412212
+lambda =     1.9332; f =          295.7591294
+lambda =     3.7372; f =          290.4206262
+Norm of dx    0.02792
+----
+Improvement on iteration 1 =       16.639672791
+-----------------
+f at the beginning of new iteration,       290.4206262236
+Predicted improvement:        1.213312246
+lambda =          1; f =          288.6952083
+lambda =     1.9332; f =          288.1545983
+Norm of dx   0.034473
+----
+Improvement on iteration 2 =        2.266027879
+-----------------
+f at the beginning of new iteration,       288.1545983445
+Predicted improvement:        0.006507944
+lambda =          1; f =          288.1461540
+Norm of dx   0.003211
+----
+Improvement on iteration 3 =        0.008444372
+-----------------
+f at the beginning of new iteration,       288.1461539720
+Predicted improvement:        0.001419435
+lambda =          1; f =          288.1441956
+Norm of dx  0.0012941
+----
+Improvement on iteration 4 =        0.001958350
+-----------------
+f at the beginning of new iteration,       288.1441956220
+Predicted improvement:        0.001072983
+lambda =          1; f =          288.1424613
+lambda =     1.9332; f =          288.1415886
+Norm of dx 0.00090172
+----
+Improvement on iteration 5 =        0.002607047
+-----------------
+f at the beginning of new iteration,       288.1415885752
+Predicted improvement:        0.001485054
+lambda =          1; f =          288.1390654
+lambda =     1.9332; f =          288.1375219
+lambda =     3.7372; f =          288.1367846
+Norm of dx  0.0014356
+----
+Improvement on iteration 6 =        0.004803942
+-----------------
+f at the beginning of new iteration,       288.1367846329
+Predicted improvement:        0.001703579
+lambda =          1; f =          288.1339473
+lambda =     1.9332; f =          288.1323174
+Norm of dx 0.00081741
+----
+Improvement on iteration 7 =        0.004467278
+-----------------
+f at the beginning of new iteration,       288.1323173547
+Predicted improvement:        0.002752081
+lambda =          1; f =          288.1277229
+lambda =     1.9332; f =          288.1250471
+Norm of dx  0.0025347
+----
+Improvement on iteration 8 =        0.007270218
+-----------------
+f at the beginning of new iteration,       288.1250471366
+Predicted improvement:        0.004804081
+lambda =          1; f =          288.1177258
+lambda =     1.9332; f =          288.1149278
+Norm of dx   0.006136
+----
+Improvement on iteration 9 =        0.010119364
+-----------------
+f at the beginning of new iteration,       288.1149277726
+Predicted improvement:        0.001668150
+lambda =          1; f =          288.1126871
+Norm of dx  0.0021323
+----
+Improvement on iteration 10 =        0.002240629
+-----------------
+f at the beginning of new iteration,       288.1126871432
+Predicted improvement:        0.000327788
+lambda =          1; f =          288.1123565
+Norm of dx 0.00082828
+----
+Improvement on iteration 11 =        0.000330680
+-----------------
+f at the beginning of new iteration,       288.1123564635
+Predicted improvement:        0.000000057
+lambda =          1; f =          288.1123564
+Norm of dx 2.4663e-05
+----
+Improvement on iteration 12 =        0.000000060
+improvement < crit termination
+
+Final value of minus the log posterior (or likelihood):288.112356 
+
+MODE CHECK
+
+Fval obtained by the minimization routine (minus the posterior/likelihood)): 288.112356
+
+RESULTS FROM POSTERIOR ESTIMATION
+parameters
+    prior mean     mode    s.d. prior pstdev
+
+alph    0.300   0.3090  0.0946 norm  0.1000 
+rhoA    0.800   0.9089  0.0284 beta  0.1000 
+
+standard deviation of shocks
+    prior mean     mode    s.d. prior pstdev
+
+eps_A   0.500   0.6384  0.0415 invg  4.0000 
+
+
+Log data density [Laplace approximation] is -294.805046.
+
+
+Initial value of the log posterior (or likelihood): -288.1124
+-----------------
+f at the beginning of new iteration,       288.1123564034
+Predicted improvement:        0.000000000
+lambda =          1; f =          288.1123564
+lambda =     1.9332; f =          288.1123564
+lambda =     3.7372; f =          288.1123564
+lambda =     7.2247; f =          288.1123564
+Norm of dx  5.104e-08
+----
+Improvement on iteration 1 =        0.000000000
+improvement < crit termination
+
+Final value of minus the log posterior (or likelihood):288.112356 
+
+MODE CHECK
+
+Fval obtained by the minimization routine (minus the posterior/likelihood)): 288.112356
+
+RESULTS FROM POSTERIOR ESTIMATION
+parameters
+    prior mean     mode    s.d. prior pstdev
+
+alph    0.300   0.3090  0.0946 norm  0.1000 
+rhoA    0.800   0.9089  0.0284 beta  0.1000 
+
+standard deviation of shocks
+    prior mean     mode    s.d. prior pstdev
+
+eps_A   0.500   0.6384  0.0415 invg  4.0000 
+
+
+Log data density [Laplace approximation] is -294.805052.
+
+Estimation::mcmc: Multiple chains mode.
+Estimation::mcmc: Old mh-files successfully erased!
+Estimation::mcmc: Old metropolis.log file successfully erased!
+Estimation::mcmc: Creation of a new metropolis.log file.
+Estimation::mcmc: Searching for initial values...
+Estimation::mcmc: Initial values found!
+
+Estimation::mcmc: Write details about the MCMC... Ok!
+Estimation::mcmc: Details about the MCMC are available in Bayesian_RBC_leisure/metropolis\Bayesian_RBC_leisure_mh_history_0.mat
+
+[> In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dyn_first_order_solver', 'C:\dynare\4.5.3\matlab\dyn_first_order_solver.m', 313)" style="font-weight:bold">dyn_first_order_solver</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dyn_first_order_solver.m',313,0)">line 313</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('stochastic_solvers', 'C:\dynare\4.5.3\matlab\stochastic_solvers.m', 264)" style="font-weight:bold">stochastic_solvers</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\stochastic_solvers.m',264,0)">line 264</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('resol', 'C:\dynare\4.5.3\matlab\resol.m', 144)" style="font-weight:bold">resol</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\resol.m',144,0)">line 144</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare_resolve', 'C:\dynare\4.5.3\matlab\dynare_resolve.m', 69)" style="font-weight:bold">dynare_resolve</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare_resolve.m',69,0)">line 69</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dsge_likelihood', 'C:\dynare\4.5.3\matlab\dsge_likelihood.m', 252)" style="font-weight:bold">dsge_likelihood</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dsge_likelihood.m',252,0)">line 252</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('posterior_sampler_iteration', 'C:\dynare\4.5.3\matlab\posterior_sampler_iteration.m', 51)" style="font-weight:bold">posterior_sampler_iteration</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\posterior_sampler_iteration.m',51,0)">line 51</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('posterior_sampler_core', 'C:\dynare\4.5.3\matlab\posterior_sampler_core.m', 170)" style="font-weight:bold">posterior_sampler_core</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\posterior_sampler_core.m',170,0)">line 170</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('posterior_sampler', 'C:\dynare\4.5.3\matlab\posterior_sampler.m', 121)" style="font-weight:bold">posterior_sampler</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\posterior_sampler.m',121,0)">line 121</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare_estimation_1', 'C:\dynare\4.5.3\matlab\dynare_estimation_1.m', 447)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare_estimation_1.m',447,0)">line 447</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.5.3\matlab\dynare_estimation.m', 105)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare_estimation.m',105,0)">line 105</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('Bayesian_RBC_leisure', 'C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_leisure\Bayesian_RBC_leisure.m', 214)" style="font-weight:bold">Bayesian_RBC_leisure</a> (<a href="matlab: opentoline('C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_leisure\Bayesian_RBC_leisure.m',214,0)">line 214</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.5.3\matlab\dynare.m', 223)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare.m',223,0)">line 223</a>)] 
+[Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  8.991494e-17.] 
+
+Estimation::mcmc: Number of mh files: 1 per block.
+Estimation::mcmc: Total number of generated files: 2.
+Estimation::mcmc: Total number of iterations: 5000.
+Estimation::mcmc: Current acceptance ratio per chain: 
+                                                       Chain  1: 27.6%
+                                                       Chain  2: 28.62%
+Estimation::mcmc: Total number of MH draws per chain: 5000.
+Estimation::mcmc: Total number of generated MH files: 1.
+Estimation::mcmc: I'll use mh-files 1 to 1.
+Estimation::mcmc: In MH-file number 1 I'll start at line 2501.
+Estimation::mcmc: Finally I keep 2500 draws per chain.
+
+
+
+MCMC Inefficiency factors per block
+Parameter       Block 1     Block 2
+SE_eps_A         10.885       5.109
+alph             19.148       8.924
+rhoA             11.442       5.055
+
+Estimation::mcmc::diagnostics: Univariate convergence diagnostic, Brooks and Gelman (1998):
+    Parameter 1...  Done! 
+    Parameter 2...  Done! 
+    Parameter 3...  Done! 
+
+Estimation::marginal density: I'm computing the posterior mean and covariance...  Done!
+Estimation::marginal density: I'm computing the posterior log marginal density (modified harmonic mean)... Done!
+
+
+ESTIMATION RESULTS
+
+Log data density is -294.860315.
+
+parameters
+        prior mean   post. mean        90% HPD interval    prior       pstdev
+
+alph         0.300       0.3257      0.1823      0.4907   norm        0.1000
+rhoA         0.800       0.9082      0.8687      0.9529   beta        0.1000
+
+standard deviation of shocks
+        prior mean   post. mean        90% HPD interval    prior       pstdev
+
+eps_A        0.500       0.6585      0.5887      0.7216   invg        4.0000
+{Undefined function or variable 'node'.
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('Bayesian_RBC_leisure', 'C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_leisure\Bayesian_RBC_leisure.m', 215)" style="font-weight:bold">Bayesian_RBC_leisure</a> (<a href="matlab: opentoline('C:\Users\w_muts01\Dropbox\shared folders\Macroeconometrics\progs\Dynare\RBC_leisure\Bayesian_RBC_leisure.m',215,0)">line 215</a>)
+[node]
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.5.3\matlab\dynare.m', 223)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare.m',223,0)">line 223</a>)
+evalin('base',fname) ;
+} 
+close all
+clear all
+clc
+dynare RBC_habit
+
+Configuring Dynare ...
+[mex] Generalized QZ.
+[mex] Sylvester equation solution.
+[mex] Kronecker products.
+[mex] Sparse kronecker products.
+[mex] Local state space iteration (second order).
+[mex] Bytecode evaluation.
+[mex] k-order perturbation solver.
+[mex] k-order solution simulation.
+[mex] Quasi Monte-Carlo sequence (Sobol).
+[mex] Markov Switching SBVAR.
+
+Using 64-bit preprocessor
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+ERROR: RBC_habit.mod: line 14, cols 20-22: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 15, cols 12-14: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 16, cols 18-20: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 19, cols 2-4: Unknown symbol: gam
+ERROR: RBC_habit.mod: line 19, cols 16-18: Unknown symbol: gam
+ERROR: RBC_habit.mod: line 19, cols 36-38: Unknown symbol: gam
+ERROR: RBC_habit.mod: line 20, cols 8-11: Unknown symbol: alph
+ERROR: RBC_habit.mod: line 20, cols 26-29: Unknown symbol: alph
+ERROR: RBC_habit.mod: line 21, cols 5-8: Unknown symbol: alph
+ERROR: RBC_habit.mod: line 21, cols 25-28: Unknown symbol: alph
+ERROR: RBC_habit.mod: line 22, cols 13-16: Unknown symbol: alph
+ERROR: RBC_habit.mod: line 22, cols 23-26: Unknown symbol: alph
+
+{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.5.3\matlab\dynare.m', 217)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare.m',217,0)">line 217</a>)
+DYNARE: preprocessing failed
+} 
+dynare RBC_habit
+
+Configuring Dynare ...
+[mex] Generalized QZ.
+[mex] Sylvester equation solution.
+[mex] Kronecker products.
+[mex] Sparse kronecker products.
+[mex] Local state space iteration (second order).
+[mex] Bytecode evaluation.
+[mex] k-order perturbation solver.
+[mex] k-order solution simulation.
+[mex] Quasi Monte-Carlo sequence (Sobol).
+[mex] Markov Switching SBVAR.
+
+Using 64-bit preprocessor
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+ERROR: RBC_habit.mod: line 14, cols 20-22: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 15, cols 12-14: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 16, cols 18-20: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 19, cols 2-4: Unknown symbol: gam
+ERROR: RBC_habit.mod: line 19, cols 16-18: Unknown symbol: gam
+ERROR: RBC_habit.mod: line 19, cols 36-38: Unknown symbol: gam
+
+{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.5.3\matlab\dynare.m', 217)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare.m',217,0)">line 217</a>)
+DYNARE: preprocessing failed
+} 
+dynare RBC_habit
+
+Configuring Dynare ...
+[mex] Generalized QZ.
+[mex] Sylvester equation solution.
+[mex] Kronecker products.
+[mex] Sparse kronecker products.
+[mex] Local state space iteration (second order).
+[mex] Bytecode evaluation.
+[mex] k-order perturbation solver.
+[mex] k-order solution simulation.
+[mex] Quasi Monte-Carlo sequence (Sobol).
+[mex] Markov Switching SBVAR.
+
+Using 64-bit preprocessor
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+ERROR: RBC_habit.mod: line 14, cols 20-22: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 15, cols 12-14: Unknown symbol: phi
+ERROR: RBC_habit.mod: line 16, cols 18-20: Unknown symbol: phi
+
+{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.5.3\matlab\dynare.m', 217)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.5.3\matlab\dynare.m',217,0)">line 217</a>)
+DYNARE: preprocessing failed
+} 
+dynare RBC_habit
+
+Configuring Dynare ...
+[mex] Generalized QZ.
+[mex] Sylvester equation solution.
+[mex] Kronecker products.
+[mex] Sparse kronecker products.
+[mex] Local state space iteration (second order).
+[mex] Bytecode evaluation.
+[mex] k-order perturbation solver.
+[mex] k-order solution simulation.
+[mex] Quasi Monte-Carlo sequence (Sobol).
+[mex] Markov Switching SBVAR.
+
+Using 64-bit preprocessor
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+Substitution of endo lags >= 2: added 1 auxiliary variables and equations.
+Found 9 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+Computing dynamic model derivatives:
+ - order 1
+Processing outputs ...
+done
+Preprocessing completed.
+

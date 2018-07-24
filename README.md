@@ -1,4 +1,5 @@
 # Teaching material for a course on *Macroeconometrics* on a graduate level
+Please feel free to use this for teaching or learning purposes, however, taking into account the license. If you spot mistakes, let me know.
 
 ## General
 The course is aimed at advanced students of economics, especially master students who are interested in basic methods and current developments in modern macroeconometrics. The course is also suitable for PhD students.

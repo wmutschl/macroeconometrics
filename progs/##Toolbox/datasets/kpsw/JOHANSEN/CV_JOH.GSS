@@ -1,0 +1,160 @@
+/*  cv_joh.gss, JHS 11/13/90
+    Calculates cointegrating vectors for the 6 variable system y,c,in,R,dp,mp
+    by dynamic gls. Can be easily extended to any other system of equations.
+*/
+#include joh_mle.prc;
+
+format 6,3;
+
+/* ***** Dates for Data set ****** */
+b1q= 1;        @ Beginning @
+b1y = 47;
+e1q = 4;       @ End @
+e1y = 88;
+/* ***** Dates for Regressions ****** */
+b2q= 1;        @ Beginning @
+b2y = 54;
+e2q = 2;       @ End @
+e2y = 86;
+
+fout = "cv_joh.out";$fout;" ";
+output file =^fout reset;
+output on;
+
+/*  Read in Data and transform */
+
+nper  = (e1y-b1y-1)*4 + (4-b1q+1) + e1q;  @ number of periods in data set @
+nperg = (e2y-b2y-1)*4 + (4-b2q+1) + e2q;  @ Number of periods for regression @
+fperg = (b2y-b1y-1)*4 + (4-b1q+1) + b2q;  @ First Period for regression @
+lperg = (e2y-b1y-1)*4 + (4-b1q+1) + e2q; @ last period for regression @
+
+load path = \kpsw\data;
+ load c[nper,1]=c.prn;
+ load in[nper,1]=in.prn;
+ load y[nper,1]=y.prn;
+ load mp[nper,1]=mp.prn;
+ load dp[nper,1]=dp.prn;
+ load r[nper,1]=r.prn;
+ dp=400*dp;
+
+optn=3;
+
+" Table 2 and 3 cointegrating regressions";
+nlag = 5; do until nlag>5;
+ "--------------  T2A -------------";
+ d9 = joh_mle(mp,y~r,fperg,nper,nlag,optn,1,0,0);
+ "--------------  T2B1 -------------";
+ d9 = joh_mle(c-y,r-dp,fperg,nper,nlag,optn,1,0,0);
+ "--------------  T2B2 -------------";
+ d9 = joh_mle(in-y,r-dp,fperg,nper,nlag,optn,1,0,0);
+nlag=nlag+1; endo;
+
+optn=2;
+
+nlag = 5; do until nlag>5;
+@ d9 = joh_mle(c~in,y,fperg,nper,nlag,optn,1,0,0);           @
+@ d9 = joh_mle(c,y~(r-dp),fperg,nper,nlag,optn,1,0,0);       @
+@ d9 = joh_mle(in,y~(r-dp),fperg,nper,nlag,optn,1,0,0);      @
+  "--------------  T2A -------------";
+  d9 = joh_mle(mp,y~r,fperg,nper,nlag,optn,1,0,0);
+ "--------------  T2B1 -------------";
+ d9 = joh_mle(c-y,r-dp,fperg,nper,nlag,optn,1,0,0);
+ "--------------  T2B2 -------------";
+ d9 = joh_mle(in-y,r-dp,fperg,nper,nlag,optn,1,0,0);
+@ d9 = joh_mle(c~in~mp,y~r~dp,fperg,nper,nlag,optn,1,0,0); @
+nlag=nlag+1; endo;
+
+
+format /RDN 12,3;
+" ------------------ Hypothesis tests: ---------------------------------";
+nlag=5;
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T1C:";
+let ah[3,2]=    1     0
+                0     1
+               -1    -1;
+
+ d9 = joh_mle(c~in,y,9,nper,nlag,optn,ah,0,1);
+
+ optn=3;
+ d9 = joh_mle(c~in,y,9,nper,nlag,optn,ah,0,1);
+
+optn=2;
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T2A:";
+let ah[3,1] = 1
+             -1
+              0;
+
+ d9 = joh_mle(mp,y~r,fperg,nper,nlag,optn,ah,0,1);
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B1:";
+let ah[6,3] = 1         0      0
+              0         1      0
+              0         0      1
+             -1        -1    -1.10778
+              0         0      0.00831
+              0         0      0;
+
+ d9 = joh_mle(c~in~mp,y~r~dp,fperg,nper,nlag,optn,ah,2,1);
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B2:";
+let ah[6,4] = 1         0      0       0
+              0         1      0       0
+              0         0      1       0
+              0         0      0       1
+             -1        -1    -1.10778  0
+              0         0     0.00831 -1;
+
+ d9 = joh_mle(c~in~mp~dp,y~r,fperg,nper,nlag,optn,ah,2,1);
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B3:";
+let ah[6,3] = 1         0      0
+              0         1      0
+              0         0      1
+             -1        -1    -1.10778
+             0          0     0.00831
+             -.00841   -.00173  0;
+
+  d9 = joh_mle(c~in~mp,y~r~(r-dp),fperg,nper,nlag,optn,ah,4,1);
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B4:";
+let ah[6,3] = 1         0      0
+              0         1      0
+              0         0      1
+             -1        -1     -1
+              0         0      0
+             -.00841  -.00173  0;
+
+ d9 = joh_mle(c~in~mp,y~r~(r-dp),fperg,nper,nlag,optn,ah,2,1);
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T6M4:";
+let ah[6,4] = 1         0      0       0
+              0         1      0       0
+              0         0      1       0
+              0         0      0       1
+             -1        -1    -1.10778  0
+              0         0     0.00831  0;
+
+ d9 = joh_mle(c~in~mp~dp,y~r,fperg,nper,nlag,optn,ah,2,1);
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T6M5:";
+let ah[5,3] = 1         0      0
+              0         1      0
+              0         0      1
+             -1        -1     -1.10778
+              0         0      0.00831;
+
+ d9 = joh_mle(c~in~mp,y~r,fperg,nper,nlag,optn,ah,2,1);
+
+
+output off;
+
+

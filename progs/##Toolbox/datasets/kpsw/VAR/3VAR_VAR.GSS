@@ -1,0 +1,111 @@
+
+/*  3var_var.gss, mww 3/17/89
+    Calculates VAR for the 3 variable system
+    and determines roots of system
+*/
+@new;@ loadp eig cumsumc;
+nlag = 6;      @ Number of Lags in VAR @
+
+/* ***** Dates for Data set ****** */
+b1q= 1;        @ Beginning @
+b1y = 47;
+e1q = 4;       @ End @
+e1y = 88;
+/* ***** Dates for Regressions ****** */
+b2q= 1;        @ Beginning @
+b2y = 49;
+e2q = 4;       @ End @
+e2y = 88;
+
+
+output file = \kpsw\3vart1pa.out reset;
+output on;
+
+/*  Read in Data and transform */
+
+nper = (e1y-b1y-1)*4 + (4-b1q+1) + e1q;
+
+load path = \kpsw\data;
+let vname[3,1] = gnp_g8p6
+                 gc82p6
+                 gif82p6;
+
+nvar=rows(vname);      @ number of variables @
+
+i=1; do while i <= nvar;
+ b1=strsect(vname[i,1],1,strlen(vname[i,1]));
+ b = b1 $+ ".prn";
+ load x[nper,1]=^b;
+ "data loaded from file ";; $b;
+ y=zeros(nper,1);
+ y[1:nper,1]=ln(x[1:nper,1]);
+ x="x" $+ ftocv(i,2,0);
+ xmark=varput(y,x);
+i=i+1; endo;
+
+/* Set Up X and Y Matrix for Regression */
+
+nperg = (e2y-b2y-1)*4 + (4-b2q+1) + e2q;  @ Number of periods for regression @
+fperg = (b2y-b1y-1)*4 + (4-b1q+1) + b2q;  @ First Period for regression @
+
+y=zeros(nvar,nperg);
+x=zeros(nvar*nlag,nperg);
+
+i=1; do while i <= nvar;
+ ctemp = "x" $+ ftocv(i,2,0);
+ xtemp=varget(ctemp);
+ y[i,.]=xtemp[fperg:fperg+nperg-1,1]';
+i=i+1; endo;
+
+nl = 1; do while nl <= nlag;
+ i=1; do while i <= nvar;
+  ctemp = "x" $+ ftocv(i,2,0);
+  xtemp=varget(ctemp);
+  x[(nl-1)*nvar+i,.]=xtemp[fperg-nl:fperg+nperg-1-nl,1]';
+ i=i+1; endo;
+nl=nl+1; endo;
+
+/* Results for Model With Constant */
+
+x=x|ones(1,nperg);
+xxp = x*x';
+yxp = y*x';
+
+beta=yxp*(invpd(xxp));
+
+/* Form Companion Matrix and Calculate roots */
+
+cpm = zeros(nvar*nlag,nvar*nlag);  @ Companion Matrix @
+cpm[1:nvar,.]=beta[.,1:nvar*nlag];
+cpm[nvar+1:nvar*nlag,1:(nlag-1)*nvar]=eye((nlag-1)*nvar);
+
+eval = eig(cpm,"");     @ Eigenvalues @
+modeval = sqrt(eval[.,1]^2 + eval[.,2]^2); @ modulus @
+
+evsort = sortc(eval~modeval,3);
+
+format /ro/m1 7,2;
+
+"Results for Model With Constant";
+evsort;
+/* Results for Model With Constant and trend */
+
+x=x|(cumsumc(ones(1,nperg)'))';
+xxp = x*x';
+yxp = y*x';
+
+beta=yxp*(invpd(xxp));
+
+/* Form Companion Matrix and Calculate roots */
+
+cpm = zeros(nvar*nlag,nvar*nlag);  @ Companion Matrix @
+cpm[1:nvar,.]=beta[.,1:nvar*nlag];
+cpm[nvar+1:nvar*nlag,1:(nlag-1)*nvar]=eye((nlag-1)*nvar);
+
+eval = eig(cpm,"");     @ Eigenvalues @
+modeval = sqrt(eval[.,1]^2 + eval[.,2]^2); @ modulus @
+
+evsort = sortc(eval~modeval,3);
+"Results for Model With Constant and Trend ";
+evsort;
+

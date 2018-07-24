@@ -1,0 +1,1 @@
+function [mCB_point,mB_point,mS,vs,vg_bs,model,m_se_B,m_se_mCB,m_tv_B,m_tv_mCB] = svec_wrapper_var(alpha, beta, beta_d, mGamma, mSigmaU,T,mB_Res,mC1_Res,eps1_tol,eps2_tol, maxIterations,iStartValueMethod,fixStart,vStartUser,iCorr,imaxRetries,fname,BS_int,bootrep,seed,var)

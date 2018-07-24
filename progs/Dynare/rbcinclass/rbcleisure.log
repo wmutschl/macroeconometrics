@@ -1,0 +1,292 @@
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+Found 9 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+Computing dynamic model derivatives:
+ - order 1
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0
+Equation number 2 : 0
+Equation number 3 : 0
+Equation number 4 : 0
+Equation number 5 : 0
+Equation number 6 : 0
+Equation number 7 : 0
+Equation number 8 : 0
+Equation number 9 : 0
+
+
+
+STEADY-STATE RESULTS:
+
+Y      		 1.1517
+C      		 0.863777
+K      		 11.517
+L      		 0.333333
+A      		 1
+R      		 0.035
+W      		 2.24582
+I      		 0.287926
+growth 		 0
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0
+Equation number 2 : 0
+Equation number 3 : 0
+Equation number 4 : 0
+Equation number 5 : 0
+Equation number 6 : 0
+Equation number 7 : 0
+Equation number 8 : 0
+Equation number 9 : 0
+
+
+
+MODEL SUMMARY
+
+  Number of variables:         9
+  Number of stochastic shocks: 1
+  Number of state variables:   3
+  Number of jumpers:           2
+  Number of static variables:  4
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables       eps_A
+eps_A        1.000000
+
+POLICY AND TRANSITION FUNCTIONS
+                                   Y               C               K               L               A               R               W               I          growth
+Constant                    1.151702        0.863777       11.517024        0.333333        1.000000        0.035000        2.245820        0.287926               0
+Y(-1)                              0               0               0               0               0               0               0               0       -0.868280
+K(-1)                       0.019060        0.041884        0.952176       -0.007098               0       -0.002460        0.084987       -0.022824        0.016549
+A(-1)                       1.596352        0.228345        1.368007        0.249272        0.900000        0.048513        1.433427        1.368007        1.386080
+eps_A                       1.064235        0.152230        0.912004        0.166181        0.600000        0.032342        0.955618        0.912004        0.924053
+
+
+MOMENTS OF SIMULATED VARIABLES
+VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
+Y                 1.147499        2.699799        7.288913       -0.026765        0.080120
+C                 0.858762        1.215037        1.476315        0.088935        0.529306
+K                11.407928       23.832839      568.004197        0.095684        0.585146
+L                 0.333813        0.327296        0.107122       -0.128241        0.106290
+A                 0.998842        1.374242        1.888540       -0.060849        0.039513
+R                 0.035215        0.066688        0.004447       -0.118391        0.157028
+W                 2.234395        3.668874       13.460633        0.051397        0.319119
+I                 0.288738        1.867646        3.488101       -0.108251        0.054715
+growth            0.000695        0.932846        0.870202        0.027037        0.010376
+
+
+CORRELATION OF SIMULATED VARIABLES
+VARIABLE         Y       C       K       L       A       R       W       I  growth
+Y           1.0000  0.8044  0.6899  0.8234  0.9896  0.5424  0.9400  0.9223  0.1994
+C           0.8044  1.0000  0.9850  0.3252  0.7103 -0.0629  0.9588  0.5122 -0.0447
+K           0.6899  0.9850  1.0000  0.1572  0.5783 -0.2341  0.8954  0.3564 -0.1123
+L           0.8234  0.3252  0.1572  1.0000  0.8966  0.9233  0.5805  0.9787  0.3600
+A           0.9896  0.7103  0.5783  0.8966  1.0000  0.6578  0.8811  0.9684  0.2471
+R           0.5424 -0.0629 -0.2341  0.9233  0.6578  1.0000  0.2233  0.8250  0.3981
+W           0.9400  0.9588  0.8954  0.5805  0.8811  0.2233  1.0000  0.7351  0.0697
+I           0.9223  0.5122  0.3564  0.9787  0.9684  0.8250  0.7351  1.0000  0.3173
+growth      0.1994 -0.0447 -0.1123  0.3600  0.2471  0.3981  0.0697  0.3173  1.0000
+
+
+AUTOCORRELATION OF SIMULATED VARIABLES
+VARIABLE         1       2       3       4       5
+Y           0.9207  0.8443  0.7728  0.7058  0.6473
+C           0.9913  0.9784  0.9621  0.9429  0.9217
+K           0.9971  0.9894  0.9776  0.9623  0.9442
+L           0.8629  0.7343  0.6177  0.5116  0.4224
+A           0.9017  0.8082  0.7219  0.6422  0.5735
+R           0.8709  0.7496  0.6392  0.5385  0.4535
+W           0.9660  0.9304  0.8944  0.8581  0.8236
+I           0.8750  0.7573  0.6501  0.5522  0.4694
+growth     -0.0175 -0.0314 -0.0284 -0.0529 -0.0412
+
+You did not declare endogenous variables after the estimation/calib_smoother command.
+Initial value of the log posterior (or likelihood): -262.5951
+-----------------
+f at the beginning of new iteration,       262.5950688029
+Predicted improvement:        0.275981478
+lambda =          1; f =          262.0921928
+lambda =     1.9332; f =          261.7076515
+lambda =     3.7372; f =          261.1770850
+Norm of dx  0.0074294
+----
+Improvement on iteration 1 =        1.417983810
+-----------------
+f at the beginning of new iteration,       261.1770849924
+Predicted improvement:        0.307976885
+lambda =          1; f =          260.7908096
+Norm of dx   0.019578
+----
+Improvement on iteration 2 =        0.386275368
+-----------------
+f at the beginning of new iteration,       260.7908096247
+Predicted improvement:        0.061338548
+lambda =          1; f =          260.6997897
+lambda =     1.9332; f =          260.6690909
+Norm of dx  0.0088042
+----
+Improvement on iteration 3 =        0.121718713
+-----------------
+f at the beginning of new iteration,       260.6690909122
+Predicted improvement:        0.034649684
+lambda =          1; f =          260.6065606
+lambda =     1.9332; f =          260.5606768
+lambda =     3.7372; f =          260.5075440
+Norm of dx  0.0036892
+----
+Improvement on iteration 4 =        0.161546943
+-----------------
+f at the beginning of new iteration,       260.5075439696
+Predicted improvement:        0.014258778
+lambda =          1; f =          260.4933102
+Norm of dx   0.004129
+----
+Improvement on iteration 5 =        0.014233725
+-----------------
+f at the beginning of new iteration,       260.4933102441
+Predicted improvement:        0.000263511
+lambda =          1; f =          260.4929076
+lambda =     1.9332; f =          260.4927558
+Norm of dx 0.00061061
+----
+Improvement on iteration 6 =        0.000554460
+-----------------
+f at the beginning of new iteration,       260.4927557843
+Predicted improvement:        0.000276669
+lambda =          1; f =          260.4922129
+lambda =     1.9332; f =          260.4917249
+lambda =     3.7372; f =          260.4908323
+lambda =     7.2247; f =          260.4892979
+lambda =     13.967; f =          260.4870502
+lambda =         27; f =          260.4854261
+Norm of dx 0.00037359
+----
+Improvement on iteration 7 =        0.007329685
+-----------------
+f at the beginning of new iteration,       260.4854260994
+Predicted improvement:        0.003065603
+lambda =          1; f =          260.4810426
+lambda =     1.9332; f =          260.4800783
+Norm of dx  0.0037838
+----
+Improvement on iteration 8 =        0.005347797
+-----------------
+f at the beginning of new iteration,       260.4800783023
+Predicted improvement:        0.000050896
+lambda =          1; f =          260.4800274
+Norm of dx 0.00051114
+----
+Improvement on iteration 9 =        0.000050906
+-----------------
+f at the beginning of new iteration,       260.4800273963
+Predicted improvement:        0.000000028
+lambda =          1; f =          260.4800274
+Norm of dx 8.5071e-06
+----
+Improvement on iteration 10 =        0.000000025
+improvement < crit termination
+
+Final value of minus the log posterior (or likelihood):260.480027 
+
+MODE CHECK
+
+Fval obtained by the minimization routine (minus the posterior/likelihood)): 260.480027
+
+RESULTS FROM POSTERIOR ESTIMATION
+parameters
+   prior mean     mode    s.d. prior pstdev
+
+alph   0.300   0.2704  0.0943 norm  0.1000 
+rhoA   0.800   0.8512  0.0361 beta  0.1000 
+sigA   0.500   0.5385  0.0372 invg  4.0000 
+
+
+Log data density [Laplace approximation] is -267.049947.
+
+
+You did not declare endogenous variables after the estimation/calib_smoother command.
+
+Initial value of the log posterior (or likelihood): -260.48
+
+MODE CHECK
+
+Fval obtained by the minimization routine (minus the posterior/likelihood)): 260.480027
+
+RESULTS FROM POSTERIOR ESTIMATION
+parameters
+   prior mean     mode    s.d. prior pstdev
+
+alph   0.300   0.2704  0.0943 norm  0.1000 
+rhoA   0.800   0.8512  0.0361 beta  0.1000 
+sigA   0.500   0.5385  0.0372 invg  4.0000 
+
+
+Log data density [Laplace approximation] is -267.049947.
+
+Estimation::mcmc: Multiple chains mode.
+Estimation::mcmc: Old mh-files successfully erased!
+Estimation::mcmc: Old metropolis.log file successfully erased!
+Estimation::mcmc: Creation of a new metropolis.log file.
+Estimation::mcmc: Searching for initial values...
+Estimation::mcmc: Initial values found!
+
+Estimation::mcmc: Write details about the MCMC... Ok!
+Estimation::mcmc: Details about the MCMC are available in RBCleisure/metropolis\RBCleisure_mh_history_0.mat
+
+
+Estimation::mcmc: Number of mh files: 1 per block.
+Estimation::mcmc: Total number of generated files: 2.
+Estimation::mcmc: Total number of iterations: 5000.
+Estimation::mcmc: Current acceptance ratio per chain: 
+                                                       Chain  1: 27.64%
+                                                       Chain  2: 28.64%
+Estimation::mcmc: Total number of MH draws per chain: 5000.
+Estimation::mcmc: Total number of generated MH files: 1.
+Estimation::mcmc: I'll use mh-files 1 to 1.
+Estimation::mcmc: In MH-file number 1 I'll start at line 2501.
+Estimation::mcmc: Finally I keep 2500 draws per chain.
+
+
+
+MCMC Inefficiency factors per block
+Parameter       Block 1     Block 2
+alph              4.194       7.395
+rhoA              3.949       4.174
+sigA              3.907      15.262
+
+Estimation::mcmc::diagnostics: Univariate convergence diagnostic, Brooks and Gelman (1998):
+    Parameter 1...  Done! 
+    Parameter 2...  Done! 
+    Parameter 3...  Done! 
+
+Estimation::marginal density: I'm computing the posterior mean and covariance...  Done!
+Estimation::marginal density: I'm computing the posterior log marginal density (modified harmonic mean)... Done!
+
+
+ESTIMATION RESULTS
+
+Log data density is -267.091544.
+
+parameters
+       prior mean   post. mean        90% HPD interval    prior       pstdev
+
+alph        0.300       0.2902      0.1370      0.4403   norm        0.1000
+rhoA        0.800       0.8531      0.7940      0.9055   beta        0.1000
+sigA        0.500       0.5576      0.4937      0.6179   invg        4.0000
+Total computing time : 0h00m51s

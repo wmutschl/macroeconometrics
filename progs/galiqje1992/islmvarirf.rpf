@@ -1,0 +1,92 @@
+*
+* Replication file for Gali, "How Well Does the IS-LM Model Fit Postwar
+* U.S. Data", QJE 1992, vol 107, no. 2, pp 709-738.
+*
+* Section III
+*
+source islmdata.src
+source islmvarsetup.src
+*
+cvmodel(parmset=base+r6,b=bf,iters=400,factor=factor,dmatrix=identity) %sigma
+*
+* Zero restrictions on the short and long-run responses don't identify
+* the signs of the shocks. This corrects the signs so the supply and IS
+* shocks have a positive impact on GNP at step 0 and the money supply
+* and money demand have a positive impact on money.
+*
+dec vect signflip(4)
+compute signflip(1)=%if(factor(1,1)<0.0,-1.0,1.0)
+compute signflip(2)=%if(factor(4,2)<0.0,-1.0,1.0)
+compute signflip(3)=%if(factor(4,3)<0.0,-1.0,1.0)
+compute signflip(4)=%if(factor(1,4)<0.0,-1.0,1.0)
+compute factor=factor*%diag(signflip)
+*
+compute steps  =20
+*
+* Do the decomposition of variance (table IV). The numbers are slightly
+* different because these are based upon the maximum likelihood
+* estimates.
+*
+errors(print,model=islm+identities,factor=factor,steps=steps,labels=shocklabels)
+*
+compute ndraws =1000
+*
+compute nvar   =%nvar
+compute fxx    =%decomp(varxx)
+compute fwish  =%decomp(inv(%nobs*%sigma))
+compute wishdof=%nobs-varnreg
+compute betaols=%modelgetcoeffs(islm)
+*
+compute targets=8
+*
+dec rect[series] impulses(targets,nvar)
+*
+* These are global variables
+*
+dec vect[rect]   %%responses(ndraws)
+dec vect signflip(nvar)
+*
+infobox(action=define,progress,lower=1,upper=ndraws) "Monte Carlo Integration"
+do draw=1,ndraws
+   if %clock(draw,2)==1 {
+      compute sigmad  =%ranwisharti(fwish,wishdof)
+      compute fsigma  =%decomp(sigmad)
+      compute betau   =%ranmvkron(fsigma,fxx)
+      compute betadraw=betaols+betau
+   }
+   else
+      compute betadraw=betaols-betau
+   compute %modelsetcoeffs(islm,betadraw)
+   *
+   compute masums=inv(%modellagsums(islm))
+   *
+   * Does a related model which is just identified with short and long
+   * run restrictions only. This is used to get initial values for theta
+   * by giving us a factor matrix (<<bv>>) which should be close.
+   *
+   @shortandlong(sr=sr_id,lr=lr,masums=masums,estimate,factor=bv) sigmad
+   @shortandlong(sr=sr,lr=lr,masums=masums,rperp=rperp,noestimate) sigmad
+   compute theta=%ginv(rperp)*%vec(bv)
+   cvmodel(parmset=base+r6,b=bf,iters=100,noprint,factor=factor,dmatrix=identity) sigmad
+   *
+   compute signflip(1)=%if(factor(1,1)<0.0,-1.0,1.0)
+   compute signflip(2)=%if(factor(4,2)<0.0,-1.0,1.0)
+   compute signflip(3)=%if(factor(4,3)<0.0,-1.0,1.0)
+   compute signflip(4)=%if(factor(1,4)<0.0,-1.0,1.0)
+   compute factor=factor*%diag(signflip)
+   impulse(noprint,model=islm+identities,factor=factor,results=impulses,steps=steps)
+   dim %%responses(draw)(targets*nvar,steps)
+   ewise %%responses(draw)(i,j)=ix=%vec(%xt(impulses,j)),ix(i)
+   infobox(current=draw)
+end do draw
+infobox(action=remove)
+*
+* This uses the <<include>> option on MCGraphIRF to display only some of
+* the variables in the full model. The <<varlabels>> option, though,
+* needs to have the whole list in the original order.
+*
+@MCGraphIRF(model=islm+identities,page=byshock,include=||5,6,4,7,8,3||,$
+  shocklabels=shocklabels,$
+  varlabels=||"GNP Growth","DRate","Real Rate","M1 Growth",$
+     "GNP","Nominal Rate","Inflation","Real Balances"||)
+

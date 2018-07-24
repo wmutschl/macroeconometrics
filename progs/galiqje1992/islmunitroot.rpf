@@ -1,0 +1,35 @@
+*
+* Replication file for Gali, "How Well Does the IS-LM Model Fit Postwar
+* U.S. Data", QJE 1992, vol 107, no. 2, pp 709-738.
+*
+* Unit Root tests (table II information).
+*
+source islmdata.src
+*
+* Dickey-Fuller unit root tests
+*
+@dfunit(det=trend) logy 1955:1 *
+@dfunit tb3 1955:1 *
+@dfunit inf 1955:1 *
+@dfunit mgr 1955:1 *
+@dfunit rr  1955:1 *
+@dfunit rmgr 1955:1 *
+*
+* Phillips-Perron unit root tests
+*
+@ppunit(det=trend,lags=3) logy 1955:1 *
+@ppunit(lags=3) tb3 1955:1 *
+@ppunit(lags=3) inf 1955:1 *
+@ppunit(lags=3) mgr 1955:1 *
+@ppunit(lags=3) rr 1955:1 *
+@ppunit(lags=3) rmgr 1955:1 *
+*
+* Estimate ARIMA(0,1,1) models
+*
+boxjenk(diffs=1,ma=1,constant,maxl) logy 1955:1 *
+boxjenk(diffs=1,ma=1,constant,maxl) tb3 1955:1 *
+boxjenk(diffs=1,ma=1,constant,maxl) inf 1955:1 *
+boxjenk(diffs=1,ma=1,constant,maxl) mgr 1955:1 *
+boxjenk(diffs=1,ma=1,constant,maxl) rr 1955:1 *
+boxjenk(diffs=1,ma=1,constant,maxl) rmgr 1955:1 *
+

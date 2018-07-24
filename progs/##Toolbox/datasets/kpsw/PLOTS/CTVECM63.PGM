@@ -1,0 +1,159 @@
+* CTVECM6.PGM, 
+*  Program to estimate vecm for model 5k in KPSW project
+*    Last modified by MWW 6/19/89
+*  
+* Constructs, estimates VECM version of common trends model, computes
+*     moving average representation
+*
+ieval neq=2*nv+nciv
+ieval iy1=1 ;ieval iy2=iy1+nv-1
+ieval idy1=iy2+1 ;ieval idy2=idy1+nv-1
+ieval iz1=idy2+1 ;ieval iz2=iz1+nciv-1
+ieval ieps1=iz2+1 ;ieval ieps2=ieps1+nv-1  ;*  Var residuals
+ieval istr1=ieps2+1;ieval istr2=istr1+nv-1 ;*  Struct. residuals
+ieval iscr=ieps2+1
+dis 'Number of Series Needed '
+write istr2
+dis 'Number of Series allocated '
+write nac
+*
+* Check to make sure that series were allocated properly
+*
+if   nac .lt. ieps2
+ {
+  dis 'Too few series allocated '
+  dis 'Change nac in main program '
+  dis 'Junk will follow !!!!!!!!!!'
+  clear
+ }
+end if
+
+labels iy1 to iy2
+# 'y' 'c' 'i' 'x4' 'mp' 'x6'
+labels idy1 to idy2
+# 'dy' 'dc' 'di' 'dx4' 'dmp' 'dx6'
+labels iz1 to iz2
+# 'z1' 'z2' 'z3'
+dim c1(nv,nv) r0(nv,nv) r1(nv,nv) r2(nv,nk) r3(nk,nk)
+dim sel(nk,nv) as(nv,nk) aparm(nk,nk) ahat(nv,nk) sigeta(nv) xout(nv+1)
+dim h(nv,nv) hinv(nv,nv) hs(nv,nv) hsinv(nv,nv) hsinvu(nv,nv) qk(2*nv,nv)
+dim cc(nv,nv) v2(nv,nv) v3(nk,nk)
+** initialize matrices
+mat sel=const(0.0)
+do i=1,nk ;eval sel(i,i)=1.0 ;end do i
+*
+* create differences, error correction variables, lagged values
+*
+do k1=iy1,iy2
+ set (k1+nv) / = k1(t)-k1(t-1)
+* diff k1 / 1 (k1+nv)
+end do k1
+do k1=iz1,iz2
+ zer k1
+ do j=1,nv
+  ieval k2=iy1+j-1
+  set k1 / = k1(t)+alpha(j,k1-iz1+1)*k2(t)
+ end do j
+end do k1
+dis ' Check that data series have been properly constructed: '
+dis ' '
+dis '                  y runs from' iy1 'to' iy2
+dis '            delta y runs from' idy1 'to' idy2
+dis '                  z runs from' iz1 'to' iz2
+print(dates) n1-nlags-1 n1+2 iy1 to iz2
+* ------ construct system
+system 1 to nv
+var idy1 to idy2
+lags 1 to nlags
+det constant -iz1 1 1 -(iz1+1) 1 1 -(iz1+2) 1 1 
+end(system)
+*
+* Additional equations specifying levels: variabls iy1 to iy2
+do i = 1,nv
+ equ(identity) i+nv i ;#i+nv -i 1 1 ;ass i+nv ;#1.0 1.0
+end do i
+*
+*
+* Additional equations specifying error correction terms
+*
+do i=2*nv+1,2*nv+nciv
+ ieval i1=i-2*nv
+ ieval k1=iz1+i-(2*nv+1) 
+ equ(identity) i k1 ;#iy1 to iy2
+ ass i ;#alpha(1,i1) alpha(2,i1) alpha(3,i1) $
+         alpha(4,i1) alpha(5,i1) alpha(6,i1)
+end do i
+*****
+estimate(print) nest1 nest2 ieps1
+dis ' Epsilon variance-covariance matrix: '
+vcv(matrix=veps) nest1 nest2 ;#ieps1 to ieps2
+dis ' Log determinant of VCV matrix = ' detln
+if n1.lt.nest1
+ begin
+ do i=ieps1,ieps2
+  set i n1 nest1 = 0.0
+ endo
+ end
+endif
+if n2.gt.nest2
+ begin
+ do i=ieps1,ieps2
+  set i nest2 n2 = 0.0
+ endo
+ end
+endif
+*print n1 n2 ieps1 to ieps2
+*
+* Set up Scratch storage for IRF's
+*
+scratch(matrix=impblk) nv*nv 1 nimp impulses
+list ieqn = 1 to neq
+mat r1=iden(1.0)
+do i=1,nv
+ impulse(noprint,decomp=r1) neq nimp i 
+ cards ieqn (impulses+(i-1)*nv+ieqn)*(ieqn .le. nv) 1 ieqn*(ieqn .le. nv)
+end do i
+*******
+*
+* Write Impulse Reponses and Residuals to Disk for use in k-period 
+*  forecast error decmpositions
+*
+open copy prme6u_6.asc 
+copy(unit=copy,org=obs,for=free) n1 n2  ieps1 to ieps2
+close copy
+set tr 1 nimp = t
+open copy irfed.asc
+do i=1,nv
+ do j=1,nv
+  ieval k=Impulses+(j-1)*nv+i
+  end do j
+end do i
+do i=1 ,nv
+ copy(unit=copy,for=free,org=obs) 1 nimpr tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+end do i
+close copy
+*
+*
+open copy irfe6u_6.asc
+do i=1,nv
+ do j=1,nv
+  ieval k=impulses+(j-1)*nv+i
+  acc k 1 nimp k 1
+ end do j
+end do i
+do i=1 ,nv
+ copy(unit=copy,for=free,org=obs) 1 nimpr tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+end do i
+close copy
+*
+* Calculate IRF's one more time before going into xirf
+*  (Note IRF's were transformed above, so they must be
+*   recalculated)
+*
+do i=1,nv
+ impulse(noprint,decomp=r1) neq nimp i 
+ cards ieqn (impulses+(i-1)*nv+ieqn)*(ieqn .le. nv) 1 ieqn*(ieqn .le. nv)
+end do i
+

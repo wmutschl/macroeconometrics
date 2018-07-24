@@ -1,0 +1,401 @@
+ Table 2 and 3 cointegrating regressions
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+    1.02900    0.00189
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+    1.02479    0.00221
+ 
+   Matrix of standard errors:
+    0.03694    0.00240
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.00481   -0.10418    0.28518   -0.27591
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+    1.03836   -0.00272
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+    1.08551   -0.00426
+ 
+   Matrix of standard errors:
+    0.06152    0.00452
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.04123   -0.19791    0.08305   -0.08204
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+    0.00334
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+    0.00335
+ 
+   Matrix of standard errors:
+    0.00215
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.01080   -0.14123    0.09384   -0.15567
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+   -0.00280
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+   -0.00220
+ 
+   Matrix of standard errors:
+    0.00501
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.15936   -0.21533    0.01771   -0.11342
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+    1.19701   -0.01343
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+    1.18318   -0.01179
+ 
+   Matrix of standard errors:
+    0.05060    0.00297
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.31791   -0.40082    0.02676   -0.05176
+ ------------------ Hypothesis tests: ---------------------------------
+----------------------------------------------------------------------- 
+           test of hypothesis T1C:
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+
+    1.04089
+    1.02652
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+
+    1.53564
+    1.60989
+ 
+   Matrix of standard errors:
+
+    0.14696
+    0.15629
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    1.17169   -0.07412   -0.07356    0.04761    0.12570    0.08668   -0.26097
+   -0.03686
+   -0.17936    0.87146   -0.19442   -0.12548    0.31086    0.06521    0.23533
+    0.02020
+ 
+ **chisquare stat, p-value, df: ;   15.64215    0.00040    2.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T2A:
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+    1.19701   -0.01343
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+    1.18318   -0.01179
+ 
+   Matrix of standard errors:
+    0.05060    0.00297
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.31791   -0.40082    0.02676   -0.05176
+ 
+ **chisquare stat, p-value, df: ;   16.35226    0.00028    2.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B1:
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+
+    1.11767   -0.00379   -0.00397
+    1.11956   -0.00243   -0.00630
+    1.15247   -0.00903   -0.00156
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+
+    1.10182   -0.00198   -0.00289
+    1.21453   -0.00476   -0.00865
+    1.16940   -0.01101   -0.00223
+ 
+   Matrix of standard errors:
+
+    0.05754    0.00309    0.00320
+    0.05488    0.00311    0.00320
+    0.08847    0.00497    0.00490
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.88343   -0.03342    0.09028   -0.01320    0.02621   -0.21721    0.18619
+    0.08816    0.19725   -0.18347   -0.04584   -0.10437
+   -0.39725    0.98715    0.40905   -0.02647   -0.27248    0.34327    0.21025
+    0.16992   -1.98478    0.22402   -0.07859    1.30727
+    0.09183   -0.03065    1.44461   -0.24072    0.05038   -0.52813    0.08511
+   -0.05501   -0.00297   -0.03265    0.02318   -0.01706
+ 
+ **chisquare stat, p-value, df: ;   32.86578    0.00003    7.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B2:
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+
+    1.06721   -0.00256
+    1.14708   -0.00863
+    1.19701   -0.01343
+    7.67797    0.05627
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+
+    1.03502   -0.00162
+    1.86919   -0.00958
+    0.59346   -0.00401
+  -41.50778    0.17245
+ 
+   Matrix of standard errors:
+
+    3.38147    0.16434
+   13.29065    0.28637
+   10.46846    0.23085
+  982.07415   18.42554
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.84696   -0.09011    0.00360   -0.00010   -0.00953    0.07637    0.36934
+    0.00096    0.15454    0.04991   -0.61451   -0.00043   -0.06868   -0.00980
+    0.23134    0.00016
+   -0.50539    0.93658    0.27827    0.00043    0.17337   -0.19210    0.45005
+    0.00094    0.16313    0.16291   -1.90821   -0.00342    0.13315   -0.06269
+    1.15716    0.00023
+    0.10643    0.00324    1.42660    0.00069   -0.10800   -0.00379   -0.37404
+    0.00060    0.11398    0.04563   -0.09477   -0.00004   -0.21280   -0.03281
+   -0.06189   -0.00012
+   -9.85546  -17.19845   36.28086    0.26499  -48.51455   25.04330   -2.45907
+    0.20433  -18.22946  -27.79684  -20.54814   -0.00303   71.17303   12.60043
+    9.98353    0.19383
+ 
+ **chisquare stat, p-value, df: ;    0.01372    1.00000    6.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B3:
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+
+    1.11767   -0.00379   -0.00397
+    1.11956   -0.00243   -0.00630
+    1.15247   -0.00903   -0.00156
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+
+    1.10182   -0.00198   -0.00289
+    1.21453   -0.00476   -0.00865
+    1.16940   -0.01101   -0.00223
+ 
+   Matrix of standard errors:
+
+    0.05754    0.00309    0.00320
+    0.05488    0.00311    0.00320
+    0.08847    0.00497    0.00490
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.88343   -0.03342    0.09028   -0.01320    0.02621   -0.21721    0.18619
+    0.08816    0.19725   -0.18347   -0.04584   -0.10437
+   -0.39725    0.98715    0.40905   -0.02647   -0.27248    0.34327    0.21025
+    0.16992   -1.98478    0.22402   -0.07859    1.30727
+    0.09183   -0.03065    1.44461   -0.24072    0.05038   -0.52813    0.08511
+   -0.05501   -0.00297   -0.03265    0.02318   -0.01706
+ 
+ **chisquare stat, p-value, df: ;   28.64691    0.00003    5.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B4:
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+
+    1.11767   -0.00379   -0.00397
+    1.11956   -0.00243   -0.00630
+    1.15247   -0.00903   -0.00156
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+
+    1.10182   -0.00198   -0.00289
+    1.21453   -0.00476   -0.00865
+    1.16940   -0.01101   -0.00223
+ 
+   Matrix of standard errors:
+
+    0.05754    0.00309    0.00320
+    0.05488    0.00311    0.00320
+    0.08847    0.00497    0.00490
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.88343   -0.03342    0.09028   -0.01320    0.02621   -0.21721    0.18619
+    0.08816    0.19725   -0.18347   -0.04584   -0.10437
+   -0.39725    0.98715    0.40905   -0.02647   -0.27248    0.34327    0.21025
+    0.16992   -1.98478    0.22402   -0.07859    1.30727
+    0.09183   -0.03065    1.44461   -0.24072    0.05038   -0.52813    0.08511
+   -0.05501   -0.00297   -0.03265    0.02318   -0.01706
+ 
+ **chisquare stat, p-value, df: ;   38.29589    0.00000    7.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T6M5:
+ ****** RESULTS of DGLS system estimation ******
+ 
+ DOLS estimate of cointegrating vector: 
+
+    1.06721   -0.00256
+    1.14708   -0.00863
+    1.19701   -0.01343
+ 
+iterating...  1  2  3  4  5  6  7  8  9 10 
+ 
+ 
+ --------- Dynamic GLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+   no. of Cochrant-Orcutt iterations:        10
+ 
+   Matrix of point estimates:
+
+    1.39021   -0.00494
+    1.40874   -0.00780
+    1.01282   -0.01070
+ 
+   Matrix of standard errors:
+
+    0.13301    0.00312
+    0.11358    0.00341
+    0.09966    0.00427
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    1.03954   -0.06046   -0.01871   -0.04314    0.06879   -0.09997    0.16932
+    0.04685    0.15485   -0.22728   -0.02964   -0.08216
+   -0.39120    0.97324    0.25890    0.05824   -0.25640    0.23775    0.05868
+    0.13485   -1.00598    0.40571   -0.00767    0.54037
+    0.04842    0.02557    1.30606   -0.09934    0.00054   -0.37644    0.02787
+   -0.00327   -0.01768   -0.04772   -0.01071   -0.03384
+ 
+ **chisquare stat, p-value, df: ;   20.26752    0.00044    4.00000
+

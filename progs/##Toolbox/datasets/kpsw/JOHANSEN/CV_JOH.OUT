@@ -1,0 +1,805 @@
+ Table 2 and 3 cointegrating regressions
+--------------  T2A -------------
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant, time in Regression
+ 
+canonical correlations
+
+    0.19744
+    0.06899
+    0.01246
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  42.555       D.F.=   0       P-value(%)= 2.50
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000
+   -1.40697
+    0.00640
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000
+   -1.40697
+    0.00640
+ 
+canonical correlations
+
+    0.19744
+    0.06899
+    0.01246
+ 
+Test statistic that there are at most  1 cointegrating vectors:  
+   Test statistic:  11.763       D.F.=   1       P-value(%)= 67.00
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    1439.51
+Log-likelihood, when #of civ = 0, =   1418.23
+Log-likelihood, when # of civ is 1, =    1433.63
+ 
+--------------  T2B1 -------------
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant, time in Regression
+ 
+canonical correlations
+
+    0.09551
+    0.03710
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  19.346       D.F.=   0       P-value(%)= 16.75
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000
+   -0.00276
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000
+   -0.00276
+ 
+canonical correlations
+
+    0.09551
+    0.03710
+ 
+Test statistic that there are at most  1 cointegrating vectors:  
+   Test statistic:   5.292       D.F.=   1       P-value(%)= 42.00
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =     577.09
+Log-likelihood, when #of civ = 0, =    567.42
+Log-likelihood, when # of civ is 1, =     574.45
+ 
+--------------  T2B2 -------------
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant, time in Regression
+ 
+canonical correlations
+
+    0.14000
+    0.04074
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  26.938       D.F.=   0       P-value(%)= 2.25
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000
+    0.00226
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000
+    0.00226
+ 
+canonical correlations
+
+    0.14000
+    0.04074
+ 
+Test statistic that there are at most  1 cointegrating vectors:  
+   Test statistic:   5.823       D.F.=   1       P-value(%)= 37.00
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =     494.31
+Log-likelihood, when #of civ = 0, =    480.84
+Log-likelihood, when # of civ is 1, =     491.40
+ 
+--------------  T2A -------------
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.17055
+    0.06978
+    0.02242
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  39.480       D.F.=   0       P-value(%)= 0.75
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000
+   -1.13378
+    0.00932
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000
+   -1.13378
+    0.00932
+ 
+canonical correlations
+
+    0.17055
+    0.06978
+    0.02242
+ 
+Test statistic that there are at most  1 cointegrating vectors:  
+   Test statistic:  13.302       D.F.=   1       P-value(%)= 20.00
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    1436.26
+Log-likelihood, when #of civ = 0, =   1416.52
+Log-likelihood, when # of civ is 1, =    1429.61
+ 
+--------------  T2B1 -------------
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.08714
+    0.02004
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  15.598       D.F.=   0       P-value(%)= 10.50
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000
+   -0.00556
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000
+   -0.00556
+ 
+canonical correlations
+
+    0.08714
+    0.02004
+ 
+Test statistic that there are at most  1 cointegrating vectors:  
+   Test statistic:   2.834       D.F.=   1       P-value(%)= 43.75
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =     574.98
+Log-likelihood, when #of civ = 0, =    567.18
+Log-likelihood, when # of civ is 1, =     573.57
+ 
+--------------  T2B2 -------------
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.13967
+    0.02666
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  24.844       D.F.=   0       P-value(%)= 0.50
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000
+    0.00111
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000
+    0.00111
+ 
+canonical correlations
+
+    0.13967
+    0.02666
+ 
+Test statistic that there are at most  1 cointegrating vectors:  
+   Test statistic:   3.782       D.F.=   1       P-value(%)= 32.00
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =     493.16
+Log-likelihood, when #of civ = 0, =    480.74
+Log-likelihood, when # of civ is 1, =     491.27
+ 
+ ------------------ Hypothesis tests: ---------------------------------
+----------------------------------------------------------------------- 
+           test of hypothesis T1C:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:    9  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.11889
+    0.07549
+    0.02030
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  36.091       D.F.=   0       P-value(%)= 1.50
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000
+   -0.64838    0.45378
+   -0.38825   -1.50834
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000    0.00000
+   -0.00000    1.00000
+   -1.04718   -1.01628
+ 
+canonical correlations
+
+    0.11889
+    0.07549
+    0.02030
+ 
+Test statistic that there are at most  2 cointegrating vectors:  
+   Test statistic:   3.281       D.F.=   2       P-value(%)= 38.00
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000
+  0.0000  1.0000
+ -1.0000 -1.0000
+ 
+   Test statistic:   2.690       D.F.=   2       P-value(%)= 26.06
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2199.66
+Log-likelihood, when #of civ = 0, =   2181.61
+Log-likelihood, when # of civ is 2, =    2198.02
+Log-likelihood, when # of civ is 2 and H is given above, =    2196.67
+ 
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:    9  168
+Treatment of deterministic components = Constant, time in Regression
+ 
+canonical correlations
+
+    0.11570
+    0.07597
+    0.01883
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  35.357       D.F.=   0       P-value(%)= 13.25
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000
+   -0.61612    0.42491
+   -0.30735   -1.42611
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000    0.00000
+   -0.00000    1.00000
+   -0.96948   -1.07467
+ 
+canonical correlations
+
+    0.11570
+    0.07597
+    0.01883
+ 
+Test statistic that there are at most  2 cointegrating vectors:  
+   Test statistic:   3.041       D.F.=   2       P-value(%)= 72.25
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000
+  0.0000  1.0000
+ -1.0000 -1.0000
+ 
+   Test statistic:   0.150       D.F.=   2       P-value(%)= 92.76
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2200.95
+Log-likelihood, when #of civ = 0, =   2183.27
+Log-likelihood, when # of civ is 2, =    2199.43
+Log-likelihood, when # of civ is 2 and H is given above, =    2199.36
+ 
+----------------------------------------------------------------------- 
+           test of hypothesis T2A:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.17055
+    0.06978
+    0.02242
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  39.480       D.F.=   0       P-value(%)= 0.75
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000
+   -1.13378
+    0.00932
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000
+   -1.13378
+    0.00932
+ 
+canonical correlations
+
+    0.17055
+    0.06978
+    0.02242
+ 
+Test statistic that there are at most  1 cointegrating vectors:  
+   Test statistic:  13.302       D.F.=   1       P-value(%)= 20.00
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000
+ -1.0000
+  0.0000
+ 
+   Test statistic:   4.140       D.F.=   2       P-value(%)= 12.62
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    1436.26
+Log-likelihood, when #of civ = 0, =   1416.52
+Log-likelihood, when # of civ is 1, =    1429.61
+Log-likelihood, when # of civ is 1 and H is given above, =    1427.54
+ 
+----------------------------------------------------------------------- 
+           test of hypothesis T3B1:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic: 118.136       D.F.=   0       P-value(%)= 0.25
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000    1.00000
+   -0.02289    0.32722    1.13359
+    0.07272    1.20144   -0.55186
+   -1.17601   -2.78043   -1.65356
+    0.00320    0.01191   -0.00420
+    0.00808    0.00425    0.01254
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000   -0.00000    0.00000
+   -0.00000    1.00000   -0.00000
+   -0.00000    0.00000    1.00000
+   -1.11860   -1.01122   -1.10778
+    0.00255   -0.00191    0.00831
+    0.00841    0.00173   -0.00393
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  3 cointegrating vectors:  
+   Test statistic:  15.947       D.F.=   3       P-value(%)= 79.75
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000  0.0000
+  0.0000  1.0000  0.0000
+  0.0000  0.0000  1.0000
+ -1.0000 -1.0000 -1.1078
+  0.0000  0.0000  0.0083
+  0.0000  0.0000  0.0000
+ 
+   Test statistic:  23.795       D.F.=   7       P-value(%)= 0.12
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2834.51
+Log-likelihood, when #of civ = 0, =   2775.44
+Log-likelihood, when # of civ is 3, =    2826.54
+Log-likelihood, when # of civ is 3 and H is given above, =    2814.64
+ 
+----------------------------------------------------------------------- 
+           test of hypothesis T3B2:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic: 118.136       D.F.=   0       P-value(%)= 0.25
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000    1.00000    1.00000
+   -0.02289    0.32722    1.13359    1.74614
+    0.07272    1.20144   -0.55186    0.82761
+    0.00808    0.00425    0.01254   -0.00674
+   -1.17601   -2.78043   -1.65356   -4.58225
+    0.00320    0.01191   -0.00420    0.08875
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000   -0.00000    0.00000    0.00000
+    0.00000    1.00000   -0.00000    0.00000
+    0.00000    0.00000    1.00000    0.00000
+   -0.00000   -0.00000    0.00000    1.00000
+   -1.55876   -1.10182   -0.90209   52.36003
+    0.04912    0.00768   -0.01345   -5.54023
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  4 cointegrating vectors:  
+   Test statistic:   6.218       D.F.=   4       P-value(%)= 80.50
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000  0.0000  0.0000
+  0.0000  1.0000  0.0000  0.0000
+  0.0000  0.0000  1.0000  0.0000
+  0.0000  0.0000  0.0000  1.0000
+ -1.0000 -1.0000 -1.1078  0.0000
+  0.0000  0.0000  0.0083 -1.0000
+ 
+   Test statistic:  21.840       D.F.=   6       P-value(%)= 0.13
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2834.51
+Log-likelihood, when #of civ = 0, =   2775.44
+Log-likelihood, when # of civ is 4, =    2831.40
+Log-likelihood, when # of civ is 4 and H is given above, =    2820.48
+ 
+----------------------------------------------------------------------- 
+           test of hypothesis T3B3:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic: 118.136       D.F.=   0       P-value(%)= 0.25
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000    1.00000
+   -0.02289    0.32722    1.13359
+    0.07272    1.20144   -0.55186
+   -1.17601   -2.78043   -1.65356
+    0.01128    0.01617    0.00833
+   -0.00808   -0.00425   -0.01254
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000    0.00000    0.00000
+    0.00000    1.00000    0.00000
+   -0.00000   -0.00000    1.00000
+   -1.11860   -1.01122   -1.10778
+    0.01095   -0.00018    0.00439
+   -0.00841   -0.00173    0.00393
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  3 cointegrating vectors:  
+   Test statistic:  15.947       D.F.=   3       P-value(%)= 79.75
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000  0.0000
+  0.0000  1.0000  0.0000
+  0.0000  0.0000  1.0000
+ -1.0000 -1.0000 -1.1078
+  0.0000  0.0000  0.0083
+ -0.0084 -0.0017  0.0000
+ 
+   Test statistic:  20.947       D.F.=   5       P-value(%)= 0.08
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2834.51
+Log-likelihood, when #of civ = 0, =   2775.44
+Log-likelihood, when # of civ is 3, =    2826.54
+Log-likelihood, when # of civ is 3 and H is given above, =    2816.06
+ 
+----------------------------------------------------------------------- 
+           test of hypothesis T3B4:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic: 118.136       D.F.=   0       P-value(%)= 0.25
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000    1.00000
+   -0.02289    0.32722    1.13359
+    0.07272    1.20144   -0.55186
+   -1.17601   -2.78043   -1.65356
+    0.01128    0.01617    0.00833
+   -0.00808   -0.00425   -0.01254
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000    0.00000    0.00000
+    0.00000    1.00000    0.00000
+   -0.00000   -0.00000    1.00000
+   -1.11860   -1.01122   -1.10778
+    0.01095   -0.00018    0.00439
+   -0.00841   -0.00173    0.00393
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  3 cointegrating vectors:  
+   Test statistic:  15.947       D.F.=   3       P-value(%)= 79.75
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000  0.0000
+  0.0000  1.0000  0.0000
+  0.0000  0.0000  1.0000
+ -1.0000 -1.0000 -1.0000
+  0.0000  0.0000  0.0000
+ -0.0084 -0.0017  0.0000
+ 
+   Test statistic:  21.657       D.F.=   7       P-value(%)= 0.29
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2834.51
+Log-likelihood, when #of civ = 0, =   2775.44
+Log-likelihood, when # of civ is 3, =    2826.54
+Log-likelihood, when # of civ is 3 and H is given above, =    2815.71
+ 
+----------------------------------------------------------------------- 
+           test of hypothesis T6M4:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic: 118.136       D.F.=   0       P-value(%)= 0.25
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000    1.00000    1.00000
+   -0.02289    0.32722    1.13359    1.74614
+    0.07272    1.20144   -0.55186    0.82761
+    0.00808    0.00425    0.01254   -0.00674
+   -1.17601   -2.78043   -1.65356   -4.58225
+    0.00320    0.01191   -0.00420    0.08875
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000   -0.00000    0.00000    0.00000
+    0.00000    1.00000   -0.00000    0.00000
+    0.00000    0.00000    1.00000    0.00000
+   -0.00000   -0.00000    0.00000    1.00000
+   -1.55876   -1.10182   -0.90209   52.36003
+    0.04912    0.00768   -0.01345   -5.54023
+ 
+canonical correlations
+
+    0.26432
+    0.20082
+    0.18029
+    0.06714
+    0.03009
+    0.01376
+ 
+Test statistic that there are at most  4 cointegrating vectors:  
+   Test statistic:   6.218       D.F.=   4       P-value(%)= 80.50
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000  0.0000  0.0000
+  0.0000  1.0000  0.0000  0.0000
+  0.0000  0.0000  1.0000  0.0000
+  0.0000  0.0000  0.0000  1.0000
+ -1.0000 -1.0000 -1.1078  0.0000
+  0.0000  0.0000  0.0083  0.0000
+ 
+   Test statistic:  21.808       D.F.=   6       P-value(%)= 0.13
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2834.51
+Log-likelihood, when #of civ = 0, =   2775.44
+Log-likelihood, when # of civ is 4, =    2831.40
+Log-likelihood, when # of civ is 4 and H is given above, =    2820.50
+ 
+----------------------------------------------------------------------- 
+           test of hypothesis T6M5:
+ 
+=====================================================================
+---- Johansen estimator of cointegrating vectors, test statistcs ----
+=====================================================================
+first, last period of regression:   29  168
+Treatment of deterministic components = Constant in Regression
+ 
+canonical correlations
+
+    0.19689
+    0.15171
+    0.08945
+    0.06789
+    0.02022
+ 
+Test statistic that there are at most  0 cointegrating vectors:  
+   Test statistic:  79.552       D.F.=   0       P-value(%)= 1.00
+ 
+  Cointegrating vector, Johansen normalization:
+
+    1.00000    1.00000    1.00000
+   -0.25536   -3.53336    0.14770
+    1.49784   -0.12569   -0.17067
+   -2.50377    2.77053   -0.96537
+    0.01589   -0.00232   -0.00162
+ 
+  Cointegrating vector -- Bewley Form:
+
+    1.00000   -0.00000    0.00000
+   -0.00000    1.00000    0.00000
+    0.00000   -0.00000    1.00000
+   -1.01315   -1.02920   -1.17064
+    0.00014    0.00032    0.01057
+ 
+canonical correlations
+
+    0.19689
+    0.15171
+    0.08945
+    0.06789
+    0.02022
+ 
+Test statistic that there are at most  3 cointegrating vectors:  
+   Test statistic:  12.703       D.F.=   3       P-value(%)= 23.50
+ 
+LR test statistic of H1(beta=H*phi) when H =
+
+  1.0000  0.0000  0.0000
+  0.0000  1.0000  0.0000
+  0.0000  0.0000  1.0000
+ -1.0000 -1.0000 -1.1078
+  0.0000  0.0000  0.0083
+ 
+   Test statistic:   2.033       D.F.=   4       P-value(%)= 72.97
+ 
+------------ Log-likelihoods ------------
+Unconstrained log-likelihood =    2819.88
+Log-likelihood, when #of civ = 0, =   2780.11
+Log-likelihood, when # of civ is 3, =    2813.53
+Log-likelihood, when # of civ is 3 and H is given above, =    2812.52
+ 
+

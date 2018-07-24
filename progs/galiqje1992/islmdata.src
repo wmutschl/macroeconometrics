@@ -1,0 +1,35 @@
+*
+* Replication file for Gali, "How Well Does the IS-LM Model Fit Postwar
+* U.S. Data", QJE 1992, vol 107, no. 2, pp 709-738.
+*
+* Common data reading and transformations
+*
+open data galiqje1992.rat
+calendar(q) 1954
+all 1987:3
+*
+* Use the first month in each quarter in compacting the monthly data
+*
+data(format=rats,select=1) / gnp tb3 m1 cpi
+*
+* Do preliminary transformations
+*
+set logy = 100.0*log(gnp)
+set inf  = 400.0*log(cpi/cpi{1})
+set mgr  = 400.0*log(m1/m1{1})
+set rr   = tb3-inf
+set rmgr = mgr-inf
+*
+* Transform to GNP growth rate and difference of interest rate.
+*
+set ygr   = logy-logy{1}
+set drate = tb3-tb3{1}
+*
+* Take means out of all variables
+*
+diff(center) ygr   / cygr
+diff(center) drate / cdrate
+diff(center) rr    / crr
+diff(center) rmgr  / crmgr
+
+

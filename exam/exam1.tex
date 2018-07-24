@@ -1,0 +1,153 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_US
+\documentclass{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[a4paper,top=2cm]{geometry}
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage[english]{babel}
+\usepackage[a4paper]{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{csquotes}
+%\parindent0mm
+%\parskip1.5ex plus0.5ex minus0.5ex
+
+\begin{document}
+
+\title{Macroeconometrics}
+\author{Exam No. 1 of 3}
+\date{Winter 2017/2018}
+\maketitle
+
+\begin{itemize}
+\item Answer \textbf{all} of the following four exercises in either German or English.
+
+\item Hand in your solutions before Tuesday November, 7 2017 at 14:00.
+
+\item Please e-mail the solutions file to willi@mutschler.eu. 
+
+\item The solution files should contain your executable (and commented) Matlab functions and script files as well as an additional documentation preferably as \texttt{pdf}, not \texttt{doc} or \texttt{docx}. 
+
+\item I will confirm the receipt of your work also by email.
+
+\item All students must work on their own, please also give your student ID number.
+
+\item It is advised to regularly check the learnweb in case of urgent updates.
+
+\item If there are any questions, do not hesitate to contact Willi Mutschler.
+\end{itemize}
+\newpage
+
+\section{AR(1) with time trend}
+Consider the AR(1) model with constant and time trend
+$$ y_t = c + d\cdot t + \phi y_{t-1} + u_t$$
+where $u_t$ is $iid(0,\sigma^2)$, $|\phi|<1$, $c \in \mathbb{R}$ and $d \in \mathbb{R}$.
+\begin{enumerate}
+	\item Compute the unconditional first and second moments, i.e. the unconditional mean, variance, autocovariance and autocorrelation of $y_t$.
+	\item Why is this process not covariance-stationary? How could one proceed to make it covariance-stationary?
+\end{enumerate}
+\newpage
+\section{Portmanteau Test For Residual Autocorrelation}
+The portmanteau test checks the null hypothesis that there is no remaining residual autocorrelation at lags $1$ to $h$ against the alternative that at least one of the autocorrelations is nonzero. In other words, the pair of hypotheses:
+\begin{align*}
+H_0:\rho_u(1)=\rho_u(2)=...=\rho_u(h) = 0
+\end{align*}
+versus:
+\begin{align*}
+H_1:\rho_u(j)\neq 0 \text{ for at least one }j=1,...,h
+\end{align*}
+is tested, where $\rho_u(j) = Corr(u_t, u_{t-j})$ denotes an autocorrelation coefficient of
+the residual series. Consider the Box-Pierce test statistic $Q_h$
+\begin{align*}
+Q_h = T \sum_{j=1}^h \hat{\rho}^2_u(j)
+\end{align*}
+which has an approximate $\chi^2(h-p)$-distribution if the null hypothesis holds and $T$ is the length of the residual series. The null hypothesis of no residual autocorrelation is rejected for large values of the test statistic. 
+
+\begin{enumerate}
+	\item Load Quarterly data for the price index of US Gross National Product given in gnpdeflator.txt by simply calling \texttt{load gnpdeflator.txt}. This is a chain-type price index with basis year 2005. The data is seasonally adjusted and spans from 1954.Q4 to 2007.Q4.
+	\item Compute the inflation series. That is, take the first difference of log(gnpdeflator).
+	\item Use the Akaike information criteria to determine the lag length $\hat{p}$.
+	\item Estimate two models: (i) an $AR(\hat{p})$ model and (ii) an $AR(1)$ model with OLS.
+	\item Set $h=\hat{p}+10$ and compute $Q_h$ as well as the corresponding p-value (\texttt{chi2pdf($Q_h$,h-p)}) for both models.
+	\item Comment, based on your findings, whether the residuals are white noise.
+\end{enumerate}
+
+%\begin{solution}
+%The size of the test may be
+%unreliable if h is too small, and it may have reduced power if h is large and,
+%hence, many \enquote{noninformative} autocorrelations are included. Also, it has been
+%found in Monte Carlo studies that the $\chi^2$ approximation to the null distribution of the test statistic is a good one only for very large sample sizes T . Therefore,
+%Ljung and Box (1978) have proposed a modified version of the portmanteau
+%statistic for which the approximation was found to be more suitable in some
+%situations. Clearly, remaining residual autocorrelation indicates a model defect. It may be
+%worth trying a model with larger orders in that case.
+%
+%\end{solution}
+\newpage
+\section{Maximum Likelihood Estimation}
+Consider the AR(1) model with constant
+$$ y_t = c + \phi y_{t-1} + u_t$$
+Assume that the error terms $u_t$ are i.i.d. Laplace distributed with known density
+\begin{align*}
+f_{u_{t}}(u)=\frac{1}{2}\exp \left( -|u|\right)
+\end{align*}
+Note that $E(u_t)=0$ and $Var(u_t)=2$.
+\begin{enumerate}
+		\item Derive the log-likelihood function conditional on the first observation.
+		\item Write a MATLAB function that calculates the conditional log-likelihood of $c$ and $\phi$.
+		\item Load the dataset \texttt{LaPlace.txt} by running \texttt{load LaPlace.txt}.
+		\item Numerically find the maximum likelihood estimates of $c$ and $\phi$ by minimizing the negative conditional log-likelihood function.
+		\item Compare your results with the maximum likelihood estimate under the assumption of Gaussianity. That is, redo the estimation by minimizing the negative Gaussian log-likelihood function.
+	\end{enumerate}
+\newpage
+
+
+\section{Bootstrap Test Statistics}
+
+Consider the AR(1) model with constant
+\begin{equation*}
+y_{t}=c +\phi y_{t-1}+u_{t}
+\end{equation*}
+for $t=1,\ldots ,T$ with i.i.d. error terms $u_{t}$ and $E(u_{t}|y_{t-1})=0$.
+Usually, we construct a $95\%$-confidence interval for e.g. $\phi$ using the normal approximation
+\begin{equation*}
+\left[ \hat{\phi}-1.96\cdot SE(\hat{\phi});\ \hat{\phi}+1.96\cdot SE(\hat{\phi})\right]
+\end{equation*}
+with $\hat{\phi}$ denoting the OLS estimate and $SE(\hat{\phi})$ the estimated standard error of $\phi$. If one does not know the asymptotic distribution of a test statistic (or it has a very complicated form), one often relies on a nonparametric approach. To this end, we are going to \enquote{bootstrap}, i.e. recompute the t-statistics a large number of times on artificial data generated from resampled residuals.\\
+We will do this step-by-step, i.e. write a Matlab script for the following:
+\begin{itemize}
+	\item Simulate $T=100$ observations with $c=1$, $\phi=0.8$ and errors drawn from the exponential distribution using $\texttt{u = exprnd(1,T,1)-1}$ such that $E(u_t)=0$.
+	\item Estimate the model with OLS and calculate the t-statistic $\tau=\frac{\hat{\phi}}{SE(\hat{\phi})}$. 
+	\item Store the OLS residuals in a vector $\hat{u} = (\hat{u}_{2},\ldots ,\hat{u}_{T})'$.
+	\item Set $B=10000$ and initialize the output vector $\tau^{\ast} = (\tau_1^\ast,...,\tau_B^\ast)$. \item For $b=1,...,B$:
+	\begin{itemize}
+	\item Draw a sample \textbf{with replacement} from $\hat{u}$ and save it as $u^{\ast} = u_{2}^{\ast},\ldots ,u_{T}^{\ast }$.\\Hint: For sampling with replacement use either the \texttt{datasample} or \texttt{randi} function. If you don't have the necessary toolbox installed you can also use \\\texttt{ustar = uhat(ceil(size(uhat,1)*rand(T-1,1)),:)}.
+	\item Initialize an artificial time series $y_t^\ast$ with $T$ observations and set $y_1^\ast = y_1$.
+	\item For $t=2,\ldots ,T$ generate
+	\begin{equation*}
+	y_{t}^{\ast }=\hat{c}+\hat{\phi}y^\ast_{t-1}+u_{t}^{\ast }
+	\end{equation*}
+	\item Estimate an AR(1) model on this artificial dataset with OLS. Store the following t-statistic in your output vector at position b:
+	$$\tau^\star = \frac{\phi^\star - \hat{\phi}}{SE(\phi^\ast)}$$
+	\end{itemize}
+	\item Sort the output vector using \texttt{sort} such that $\tau_{(1)}^\ast \leq ... \leq \tau_{(B)}^\ast$.
+	 \item  The bootstrap approximate confidence interval for $\phi$ is then
+	\begin{equation*}
+	\left[ \hat{\phi}-\tau_{((1-\alpha /2)R)}^{\ast }\cdot SE(\hat{\phi});\ \hat{\phi}-\tau_{((\alpha/2)R)}^{\ast }\cdot SE(\hat{\phi})\right] 
+	\end{equation*}
+	Set $\alpha=0.05$ and compare this with the normal approximation.
+	\item Redo the exercise for $T=30$ and $T=10000$. Comment on your findings.
+\end{itemize}
+
+%Typischerweise führen asymptotische
+%Resultate, sofern verfügbar, für entsprechende Schätz- und Testverfahren zu Grenzverteilungen,
+%die nichtstandard sind und/oder von unbekannten Parametern abhängen, die nur schwer zu
+%schätzen sind. Darüber hinaus zeigen asymptotische Verfahren bei kleineren Stichproben häufig
+%schlechte Approximationseigenschaften. Bootstrapverfahren helfen in beiden Situationen, die
+%Verteilungen statistischer Größen zu schätzen und bei kleinen Stichproben dabei bessere Er-
+%gebnisse zu erzielen. Gleichzeitig hat sich die Praktikabilität dieser Verfahren durch den Einsatz
+%von Computern mit immer stärkerer Rechenleistung deutlich verbessert.
+%Besonders aufgrund der flexiblen und vielfältigen Einsatzmöglichkeiten der Bootstrap-Methodik,
+%sehe ich großes strategisches Forschungspotential an der Fakultät für Statistik.
+
+\end{document}

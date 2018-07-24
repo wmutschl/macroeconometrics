@@ -1,0 +1,459 @@
+* Program kpsw3.rts, from stock, modified by mww 11/17/90 (work with RATS 3)
+* Calculation of standard errors on impulse responses, by acb 5/31/89
+* See Rats manual section on Monte Carlo Integration
+*
+*************
+* Set up VECM
+*
+*  (i)    Model definition parameters
+*
+bma com 3500 mat 50 glo 300
+ieval nv=3      ;ieval nk=1
+ieval nlags=8   ;ieval nimp=120 
+ieval nac=60    ;* number of series to allocate
+ieval nciv=nv-nk
+ieval neq=nv+2*nciv
+ieval mxvr=nv*nlags+3
+seed 123
+sou kpsw3.inp
+ieval n1=(49:3) ;ieval n2=(88:4)
+*
+*  (ii)   Basic variables in model, in first differences
+* 
+ieval k=0
+dofor yy=y c in
+ ieval k=k+1
+ set k / = yy(t)
+end dofor
+*
+*  (iii)  Cointegrating vectors (either theoretical or empirical), to be
+*         entered as columns of alpha
+*
+dim alpha(nv,nv-nk) a0(nv,nk)
+read(unit=input) alpha
+ 1  1
+-1  0
+ 0 -1
+*
+* Desired form for "A" (factor loading) matrix -- must:
+*   (i)  be of form AHAT=A0*P, where P is kxk lower triangular with
+*        ones on the diagonal
+*   (ii) have tr(ALPHA)*A0=0, i.e. be orthogonal to cointegrating vectors
+*
+read(unit=input) a0
+ 1
+ 1
+ 1
+*
+*--------------------------------------------------*
+* Estimate model, A, Impulse responses
+*
+* CTVECM.PGM, JHS 3/6/87 modified my MWW 4/20/89
+* Constructs, estimates VECM version of common trends model, computes
+*     moving average representation
+*
+ieval iy1=1 ;ieval iy2=iy1+nv-1
+ieval idy1=iy2+1 ;ieval idy2=idy1+nv-1
+ieval idz1=idy2+1 ;ieval idz2=idz1+nciv-1
+ieval iz1=idz2+1 ;ieval iz2=iz1+nciv-1
+ieval ieps1=iz2+1 ;ieval ieps2=ieps1+nv-1
+ieval iscr=ieps2+1
+ieval ic1=iscr+1 ;ieval ic2=ic1+nv*nv-1
+ieval ieta1=ic2+1 ;ieval ieta2=ieta1+nv-1
+ieval iferr1=ieta2+1 ;ieval iferr2=iferr1+nv*(nk+1)-1
+ieval ixp1=iferr2+1 ;ieval ixp2=ixp1+nv-1
+dim c1(nv,nv) r0(nv,nv) r1(nv,nv) r2(nv,nk) r3(nk,nk)
+dim sel(nk,nv) as(nv,nk) aparm(nk,nk) ahat(nv,nk) sigeta(nv) xout(nv+1)
+dim h(nv,nv) hinv(nv,nv) hs(nv,nv) hsinv(nv,nv) qk(nv,nv)
+dim cc(nv,nv) v2(nv,nv) v3(nk,nk)
+** initialize matrices
+mat sel=const(0.0)
+do i=1,nk ;eval sel(i,i)=1.0 ;end do i
+set time1 / = t
+*
+* create differences, error correction variables, lagged values
+*
+do k1=iy1,iy2
+ set (k1+nv) / = k1(t)-k1(t-1)
+*diff k1 / 1 (k1+nv)
+end do k1
+do k1=iz1,iz2
+ zer k1
+ do j=1,nv
+  ieval k2=iy1+j-1
+  set k1 / = k1(t)+alpha(j,k1-iz1+1)*k2(t)
+ end do j
+  set (idz1+k1-iz1) / = k1(t)-k1(t-1)
+* diff k1 / 1 (idz1+k1-iz1)
+end do k1
+*
+*output noecho
+dis ' Check that data series have been properly constructed: '
+dis ' '
+dis '                  y runs from' iy1 'to' iy2
+dis '            delta y runs from' idy1 'to' idy2
+dis '            delta z runs from' idz1 'to' idz2
+dis '                  z runs from' iz1 'to' iz2
+print(dates) n1-nlags-1 n1+2 iy1 to iz2
+* ------ construct system
+system
+var idy1 to idy2
+lags 1 to nlags
+det constant -iz1 1 1 -(iz1+1) 1 1
+*
+* Additional equations specifying error correction terms
+*
+do i=nv+1,nv+nciv
+ ieval j=i+nciv ;ieval i1=i-nv
+ ieval k1=idz1+i-(nv+1) ;ieval k2=iz1+i-(nv+1)
+ equ(identity) i k1 ;#idy1 to idy2
+ ass i ;#alpha(1,i1) alpha(2,i1) alpha(3,i1)
+ equ(identity) j k2 ;#k1 -k2 1 1 ;ass j ;#1.0 1.0
+end do i
+end(system)
+*****
+estimate n1 n2 ieps1
+dis ' Epsilon variance-covariance matrix: '
+vcv(matrix=veps) n1 n2 ;#ieps1 to ieps2
+dis ' Log determinant of VCV matrix = ' detln
+dim sdm(nv,nv) sdmc(nv,nv)
+list ieqn = 1 to neq
+mat r1=iden(1.0)
+*******
+* Set up for Monte-Carlo Integration
+*******
+ieval ndraws=5
+ieval ncoef=nv*nlags+3
+ieval nvd=7
+cmom(equation=1,nodepvar,matrix=xxx) n1 n2
+declare rect sxx(ncoef,ncoef) sinv(nv,nv) swish(nv,nv) $
+   ranw(nv,nobs) rantr(nobs,nv) ranc(ncoef,nv) sxxuover 
+declare vector betadraw betaols(ncoef*nv) sxxu(ncoef*nv)
+dim ivd(nvd)
+* variance decomposition horizons to be tabulated
+read(unit=input) ivd
+ 1 4 8 12 16 20 24
+overlay sxxu(1) with sxxuover(ncoef,nv) 
+overlay coeff(1,1) with betadraw(ncoef*nv) 
+matrix sxx = tr( decomp( inv(xxx) ) )
+matrix sinv = tr(decomp(inv(veps)))
+matrix betaols = betadraw
+*
+declare rect firstir(nimp,nv**2) secondir(nimp,nv**2) $
+   firstvd(fix(ivd(nvd))+1,nv*nk) secondvd(fix(ivd(nvd))+1,nv*nk) $
+   irbeta(nimp,nv**2) vdbeta(fix(ivd(nvd))+1,nv*nk) $
+   irmse(nimp,nv**2) vdmse(fix(ivd(nvd))+1,nv*nk) 
+declare vector firstbe(ncoef*nv) secondbe(ncoef*nv)
+matrix firstir=secondir=irbeta=irmse=const(0.0)
+matrix firstvd=secondvd=vdbeta=vdmse=const(0.0)
+matrix firstbe=secondbe=const(0.0)
+*****
+* Do loop over Monte-Carlo draws
+*****
+do draws = 1,ndraws+1
+   matrix ranw = ran(1.0/sqrt(nobs))
+   matrix rantr = tr(ranw)*sinv 
+   matrix swish = decomp(inv( (tr(rantr)*rantr) ))
+   matrix ranc = ran(1.0)
+   matrix sxxuover = tr(sxx)*ranc
+   if draws>1
+      matrix betadraw = betaols+kronid(swish,sxxu)
+   else
+      matrix betadraw = betaols
+   if draws>1 {
+      matrix firstbe = firstbe+betadraw
+      ewise secondbe(i) = secondbe(i)+betadraw(i)**2
+      }
+   matrix r1=iden(1.0)
+   do i=1,nv
+    impulse(noprint,decomp=r1) neq nimp i 
+    cards ieqn (ic1+(i-1)*nv+ieqn-1) 1 ieqn
+   end do i
+*******
+* CTAHAT.PGM JHS 3/6/87, mww 4/20/89
+* Estimates parameters of A matrix, construct rotation
+*   estimate initial H matrix from C(1)'C(1) null right eigenvectors
+*   Must have run CTVECM first
+*
+*       First compute cumulative C(L), overwrite current C(L)
+*
+do i=1,nv
+ do j=1,nv
+  ieval k=IC1+(j-1)*nv+i-1
+  acc k 1 nimp k 1
+  eval c1(i,j) = k(nimp)
+ end do j
+end do i
+mat sdm = c1*veps*(tr(c1))       ;* Spectral Density matrix at zero
+mat sdmc=sdm
+do i = 1, nv;
+ do j = 1,i;
+  eval sdmc(i,j)=sdmc(i,j)/(sqrt(sdm(i,i)*sdm(j,j)))
+end do j
+end do i
+mat cc = tr(c1)*c1
+eigen cc evals hinv
+mat h=inv(hinv)
+*
+*   Estimate unknown parms using cholesky solution algorithm based on A0
+*
+mat r2=a0*inv(tr(a0)*a0)
+mat v3=tr(r2)*c1*veps*tr(c1)*r2
+mat aparm=decomp(v3)
+mat v3=iden(1.0)
+do i=1,nk ;eval v3(i,i)=1/aparm(i,i) ;end do i
+mat aparm=aparm*v3
+mat ahat=a0*aparm
+* compute HS matrix, rotated s.t. C(1)HSINV=[AHAT 0]
+*   starting from H: C(1)HINV=[AHAT*R11  0]
+mat r0=c1*hinv
+mat r3=inv(tr(ahat)*ahat)*(tr(ahat)*c1*hinv*tr(sel))
+mat r1=iden(1.0)
+do i=1,nk
+ do j=1,nk ;eval r1(i,j)=r3(i,j) ;end do j
+end do i
+mat hs=r1*h
+mat hsinv=inv(hs)
+*
+* Orthogonalize innovations, with permanent components ordered first
+*
+mat v2=hs*veps*tr(hs)
+mat r0=decomp(v2)
+mat r1=iden(1.0)
+do i=1,nv
+ eval r1(i,i)=r0(i,i) ;eval sigeta(i)=r0(i,i)*r0(i,i)
+end do i
+mat r0=inv(r0)
+mat hs=r1*r0*hs
+mat hsinv=inv(hs)
+mat r0=c1*hsinv
+mat r0=hs*veps*tr(hs)
+********
+*   CTIR.PGM                             JHS 3/6/87
+* Cumulative IR's to rotated shocks, permanent shocks being first two
+*    These IR weights will be used in computing k-step ahead forecast errors
+*
+*    Must have run CTVECM, CTAHAT first
+*    n.b. This program overwrites existing MA representation C(L) 
+*         with C(L)*HSINV  (Cumulative), which are eta impulse responses
+*
+do i9=1,nimp
+ do i=1,nv
+  do j=1,nv
+   ieval k=IC1+(j-1)*nv+i-1
+   eval r0(i,j)=k(i9)
+  end do j
+ end do i
+ mat r0=r0*hsinv
+ do i=1,nv
+  do j=1,nv
+   ieval k=IC1+(j-1)*nv+i-1
+   eval k(i9)=r0(i,j)
+*****
+* accumulate impulses for Monte-Carlo
+*****
+   ieval impno=(j-1)*nv+i
+   if draws>1 {
+      eval firstir(i9,impno) = firstir(i9,impno)+r0(i,j)
+      eval secondir(i9,impno) = secondir(i9,impno)+r0(i,j)**2
+      }
+   else  
+      eval irbeta(i9,impno) = r0(i,j)
+*****
+  end do j
+ end do i
+end do i9
+************
+*--------------------------------------------------*
+*  Variance Decompositions
+*
+ieval kferr=8 ;
+*     CTDECOMP.PGM                     JHS 3/6/87
+* 
+* Compute k-step ahead variance decompositions, forecast errors
+*    First compute variance decompositions
+*
+*    Must have run:  CTVECM, CTAHAT, CTIR
+*
+mat qk=const(0.0)
+do i9=1,fix(ivd(nvd))
+ do i=1,nv
+  do j=1,nv
+   ieval k=IC1+nv*(j-1)+i-1
+   eval qk(i,j)=qk(i,j)+k(i9)*k(i9)
+  end do j
+ end do i
+ mat r1=const(0.0)
+ do i=1,nv
+  do j=1,nv
+   eval r1(i,i)=r1(i,i)+qk(i,j)*sigeta(j)
+  end do j
+ end do i
+ do i=1,nv
+  do j=1,nk
+   ieval k=iferr1+(j-1)*nv+i-1
+   eval k(i9)=(qk(i,j)*sigeta(j))/r1(i,i)
+   ieval vdno=(j-1)*nv+i
+   if draws>1 {
+      eval firstvd(i9,vdno)=firstvd(i9,vdno)+k(i9)
+      eval secondvd(i9,vdno)=secondvd(i9,vdno)+k(i9)**2
+      }
+   else
+      eval vdbeta(i9,vdno)=k(i9)
+  end do j
+ end do i
+end do i9
+*    compute variance decomposition at infinity
+ieval i9=i9+1
+do i=1,nv
+ eval s8=0
+ do j=1,nk ;eval s8=s8+ahat(i,j)*ahat(i,j)*sigeta(j) ;end do j
+ do j=1,nk
+  ieval k=iferr1+(j-1)*nv+i-1
+  eval k(i9)=ahat(i,j)*ahat(i,j)*sigeta(j)/s8
+  ieval vdno=(j-1)*nv+i
+  if draws>1 {
+     eval firstvd(i9,vdno)=firstvd(i9,vdno)+k(i9)
+     eval secondvd(i9,vdno)=secondvd(i9,vdno)+k(i9)**2
+     }
+  else
+     eval vdbeta(i9,vdno)=k(i9)
+ end do j
+end do i
+********
+end do draws
+matrix firstir=scale(1.0/ndraws)*firstir
+matrix secondir=scale(1.0/ndraws)*secondir
+matrix firstvd=scale(1.0/ndraws)*firstvd
+matrix secondvd=scale(1.0/ndraws)*secondvd
+ewise irmse(i,j)=sqrt(secondir(i,j)-2.0*firstir(i,j)*irbeta(i,j)+ $
+                 irbeta(i,j)**2)
+ewise vdmse(i,j)=sqrt(secondvd(i,j)-2.0*firstvd(i,j)*vdbeta(i,j)+ $
+                 vdbeta(i,j)**2)
+ewise secondir(i,j)=sqrt(secondir(i,j)-firstir(i,j)**2)
+ewise secondvd(i,j)=sqrt(secondvd(i,j)-firstvd(i,j)**2)
+matrix firstbe=scale(1.0/ndraws)*firstbe
+matrix secondbe=scale(1.0/ndraws)*secondbe
+ewise secondbe(i)=sqrt(secondbe(i)-firstbe(i)**2)
+*
+* print out IR's to first two permanent shocks
+*
+declare rect dsplirf(nimp,1+nv) dsplirs(nimp,1+nv)
+do i=1,nk
+  dis ' '
+  dis ' '
+  dis ' BHat IRs to permanent shock number:' i
+  dis ' '
+  ieval ii=(i-1)*nv
+  do j=1,nimp 
+    eval dsplirf(j,1)=j ; eval dsplirs(j,1)=j 
+    do k=1,nv
+      eval dsplirf(j,1+k)=irbeta(j,ii+k)
+      eval dsplirs(j,1+k)=irmse(j,ii+k)
+    end do k
+  end do j
+  write(format='(f8.0,7f10.5)') dsplirf
+  dis ' RMSE IRs to permanent shock number:' i
+  dis ' '
+  write(format='(f8.0,7f10.5)') dsplirs
+  dis ' '
+  dis ' Mean IRs to permanent shock number:' i
+  dis ' '
+  do j=1,nimp 
+    eval dsplirf(j,1)=j ; eval dsplirs(j,1)=j 
+    do k=1,nv
+      eval dsplirf(j,1+k)=firstir(j,ii+k)
+      eval dsplirs(j,1+k)=secondir(j,ii+k)
+    end do k
+  end do j
+  write(format='(f8.0,7f10.5)') dsplirf
+  dis ' SDev IRs to permanent shock number:' i
+  dis ' '
+  write(format='(f8.0,7f10.5)') dsplirs
+end do i
+*
+* write out VD table
+*
+declare rect dsplvdf(nvd+1,nv+1) dsplvds(nvd+1,nv+1)
+do i=1,nk
+  ieval ii=(i-1)*nv
+  ieval iv=1
+  do i9=1,fix(ivd(nvd))
+    if (i9.eq.ivd(iv))
+     begin
+      eval dsplvdf(iv,1)=i9
+      eval dsplvds(iv,1)=i9
+      do j=1,nv
+        eval dsplvdf(iv,j+1)=vdbeta(i9,ii+j)
+        eval dsplvds(iv,j+1)=vdmse(i9,ii+j)
+      end do j   
+      ieval iv=iv+1
+     end
+  end do i9
+  ieval i9=i9+1
+  eval dsplvdf(iv,1)=0.0
+  eval dsplvds(iv,1)=0.0
+  do j=1,nv
+    eval dsplvdf(iv,j+1)=vdbeta(i9,ii+j)
+    eval dsplvds(iv,j+1)=vdmse(i9,ii+j)
+  end do j
+  dis ' '
+  dis ' '
+  dis '                           Table' i
+  dis ' '
+  dis '      BHat Fraction of Variance Attributed to Innovation'
+  dis '                in Permanent Component #' i
+  dis ' '
+  dis '  Horizon    vble#1    vbl#2  . . . '
+  dis ' '
+  write(noskip,format='(f8.0,6f10.2)') dsplvdf
+  dis ' '
+  dis ' '
+  dis '      RMSE Fraction of Variance Attributed to Innovation'
+  dis '                in Permanent Component #' i
+  dis ' '
+  dis '  Horizon    vble#1    vbl#2  . . . '
+  dis ' '
+  write(noskip,format='(f8.0,6f10.2)') dsplvds
+  dis ' '
+  ieval iv=1
+  do i9=1,fix(ivd(nvd))
+    if (i9.eq.ivd(iv))
+     begin
+      eval dsplvdf(iv,1)=i9
+      eval dsplvds(iv,1)=i9
+      do j=1,nv
+        eval dsplvdf(iv,j+1)=firstvd(i9,ii+j)
+        eval dsplvds(iv,j+1)=secondvd(i9,ii+j)
+      end do j   
+      ieval iv=iv+1
+     end
+  end do i9
+  ieval i9=i9+1
+  eval dsplvdf(iv,1)=0.0
+  eval dsplvds(iv,1)=0.0
+  do j=1,nv
+    eval dsplvdf(iv,j+1)=firstvd(i9,ii+j)
+    eval dsplvds(iv,j+1)=secondvd(i9,ii+j)
+  end do j
+ dis ' '
+ dis '      Mean Fraction of Variance Attributed to Innovation'
+ dis '                in Permanent Component #' i
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvdf
+ dis ' '
+ dis ' '
+ dis '      SDev Fraction of Variance Attributed to Innovation'
+ dis '                in Permanent Component #' i
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvds
+ dis ' '
+end do i  
+write firstbe
+write secondbe
+end
+

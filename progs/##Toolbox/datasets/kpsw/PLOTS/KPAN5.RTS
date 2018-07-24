@@ -1,0 +1,51 @@
+* Program kpan4.rts
+*
+*     plots comparisons with solow resids, JHS, MWW 7/6/89
+*   Annual data
+*
+cal 47 1 1
+all 10 88:1
+ieval n1=(49:1) ;ieval n2=(88:1)
+dedit \kpsw\data\kpsw.rat
+prtdata hall
+prtdata prescott
+prtdata denison
+quit
+zer hall ; zer prescott ; zer denison
+open data \kpsw\data\KPSW.rat
+ data(for=rat) 51,1 78,1 hall
+ data(for=rat) 51,1 82,1 ypotden
+ data(for=rat) 56,1 83,1 prescott
+ data(for=rat) 51,1 82,1 denison
+ data(for=rat) 51,1 85,1 bcturnpt
+ close data
+ zer bcdates; set bcdates / = (bcturnpt(t).ne.0)
+
+ieval n1b=(54:1) ;ieval n2=(88:1)
+open data CT6.dat
+ data(for=rat) n1b n2 y6s1 y6s1a
+close data
+*
+*** Equating long-term mean growths -- Solow Residual 
+set dden 54:1 82:1 = denison(t)-denison(t-1)
+stats dden 54:1 82:1
+eval mden = mean
+set y6s1am n1b n2 = y6s1a(t)
+eval xm = denison(54:1)-y6s1am(54:1)
+set y6s1am n1b n2 = y6s1am(t)+xm
+set y6s1s n1b n2 = 400*y6s1(t)
+print(dates) 54,1 78,1 y6s1 hall prescott
+*
+cross hall y6s1s 54,1 78,1 -1 1
+cross prescott y6s1s 56,1 83,1 -1 1
+print(dates) 54:1 56:2 denison y6s1am
+print(dates) 54:1 83:2 hall prescott y6s1s
+*
+open copy f7asc.dat;
+copy(for=free,org=obs) 54:1 82:1 y6s1am denison
+close copy 
+set y6s1s 51:1 53:1 = 0.0
+open copy f8asc.dat;
+copy(for=free,org=obs) 51:1 88:1 y6s1s hall prescott
+close copy 
+

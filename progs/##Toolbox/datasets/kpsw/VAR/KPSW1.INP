@@ -1,0 +1,45 @@
+* kpsw1.inp, from Stock, modified by mww 4/20/89
+*
+* inputs, transforms data for KPSW1 analysis, using citibase data
+cal 47 1 4
+all nac 88:4 neq mxvr
+ieval nfirst = (47:1)
+ieval nlast  = (88:4)
+***
+sou \kpsw\var\ctinit.pgm
+***
+open data \kpsw\data\kpsw1.dat
+data(for=rats,compact=average) / gnp82 gc82 gif82 gge82 p16 gnp gge
+close data
+*
+set y     / = log(gnp82(t)-gge82(t))-log(p16(t))
+set c     / = log(gc82(t))-log(p16(t))
+set in     / = log(gif82(t))-log(p16(t))
+**********
+
+set dy  nfirst+1 nlast = y(t)-y(t-1)
+set dc  nfirst+1 nlast = c(t)-c(t-1)
+set din nfirst+1 nlast = in(t)-in(t-1)
+*
+* Money and Price -- 5 variable model 
+*
+ieval nfirst = (47:1)
+ieval nlast  = (88:4)
+open data \kpsw\data\kpsw1.dat
+data(for=rats,compact=average) nfirst nlast m2 fygm3 fyaaac fycp
+close data
+*
+set p nfirst nlast =  log( (gnp(t)-gge(t))/(gnp82(t)-gge82(t)) )
+set m nfirst nlast =  log(m2(t)) - log(p16(t))
+set mp nfirst nlast = m(t)-p(t)
+set vel nfirst nlast = m(t)-p(t)-y(t)
+set rgs nfirst nlast = fygm3(t)/400.0
+set rps nfirst nlast = fycp(t)/400.0
+set rpl nfirst nlast = fyaaac(t)/400.0
+**********
+zer dp; zer dm
+set dp  nfirst+1 nlast = p(t)-p(t-1)
+set dm  nfirst+1 nlast = m(t)-m(t-1)
+set dp1 nfirst   nlast-1 = p(t+1)-p(t)
+ set dp1 nlast nlast = 0.0
+

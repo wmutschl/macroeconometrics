@@ -1,0 +1,210 @@
+01/28/91
+             "STOCHASTIC TRENDS AND ECONOMIC FLUCTUATIONS"
+             by King,R., Plosser,C., Stock,J., and Watson,M.
+
+                          REPLICATION DISK
+
+
+          This disk contains all the programs that duplicate the tables and figuress reported in the KPSW paper (Final version - January 1991).  
+
+          NOTE 1 - All cointegrating vectors and Wald statistics reported in the paper were also estimated using dynamic gls (SW,89) and Johansen's (1988) algorithms. These numbers are not reported in the paper, and can be replicated  using, respectively, \kpsw\dgls\cv_gls.gss and \kpsw\johansen\cv_joh.gss. The outputs are, respectively, in \kpsw\dgls\cv_gls.out and \kpsw\johansen\cv_joh.out.
+
+          NOTE 2 - All log-likelihood statistics reported in the paper are in:
+                   PATH:\kpsw\johansen
+                    cv_joh.gss (Program - calls procedure joh_mle.prc)
+                    cv_joh.out (Output)
+
+          NOTE 3 - All RATS programs were written for RATS 2.13, except the program VAR3SEIR.RTS which should be run using RATS 3.03. RATS 3.03 should be used as well in all programs under the subdirectory \kpsw\plots.
+
+               
+                      TABLES
+                      ------
+   
+Table 1 -- Panel A : VAR -- PATH:\kpsw\var
+                    3var_var.gss (Program)
+                    3vart1pa.out (Output)
+                     
+           Panel B:
+                   Jç statistic -- PATH:\kpsw\johansen
+                    cv_joh.gss (Program - calls procedure joh_mle.prc)
+                    cv_joh.out (Output)
+                                    
+                  Qf statistics -- PATH:\kpsw\qf
+                    qf_t1pb1.cmd (Program - calls main program QFPV.PRG)
+                    qf_t1pb1.out (Output)
+
+            Panel C:  PATH:\kpsw\dols
+                  WALD statistic and Cointegrating vector:
+                    cv_ols.gss (Program - calls procedure dols_ar.prc)
+                    cv_ols.out (Output)
+
+Table 2 -- Panel A -- Money Demand
+                   CIV and WALD statistic -- PATH:\kpsw\dols
+                    cv_ols.gss (Program - calls procedure dols_ar.prc)
+                    cv_ols.out (Output)
+
+                   Jç statistic -- PATH:\kpsw\johansen
+                    cv_joh.gss (Program - calls procedure joh_mle.prc)
+                    cv_joh.out (Output)
+
+                   Qf statistics -- PATH:\kpsw\qf
+                    qf_t2pa.cmd (Program - calls main program QFPV.PRG)
+                    qf_t2pa.out (Output)
+
+             Panel B 
+                   CIV and WALD statistics -- PATH:\kpsw\dols
+                    cv_ols.gss (Program - calls procedure dols_ar.prc)
+                    cv_ols.out (Output)
+
+                   Jç statistics -- PATH:\kpsw\johansen
+                    cv_joh.gss (Program - calls procedure joh_mle.prc)
+                    cv_joh.out (Output)
+
+                   Qf statistics -- PATH:\kpsw\qf
+                    qf_t2pb1.cmd (Program - calls main program QFPV.PRG)
+                    qf_t2pb1.out (Output)
+                    qf_t2pb2.cmd (Program - calls main program QFPV.PRG)
+                    qf_t2pb2.out (Output)
+
+           
+Table 3:
+            Panel A.
+                 Cointegrating vector estimates -- PATH:\kpsw\dols
+                    cv_ols.gss (Program - calls procedure dols_ar.prc)
+                    cv_ols.out (Output)
+
+                  Qf statistics -- PATH:\kpsw\qf
+                    qf_t3pa.cmd (Program - calls main program QFPV.PRG)
+                    qf_t3pa.out (Output)
+
+          Panel B.
+                  WALD statistics -- PATH:\kpsw\dols
+                    cv_ols.gss (Program - calls procedure dols_ar.prc)
+                    cv_ols.out (Output)
+                    
+Table 4:
+           Point estimates and Standard errors -- PATH:\kpsw\var 
+        VAR3SEIR.RTS (Program - calls programs KPSW3.INP and CTINIT3.PGM) 
+        VAR3SEIR.OUT (Output)         
+
+NOTE: The Table is constructed using ndraws=500 and nlags=8 in VAR3SEIR.rts. 
+
+Table 5:
+           Point estimates and Standard errors -- PATH:\kpsw\var 
+        XVAR6UM1.RTS (Program - calls programs KPSW1.INP and CTINIT.PGM) 
+         M1.OUT     (Output)      
+   
+NOTE: The Table is constructed using ndraws=500 and nlags=8 in XVAR6UM1.rts. 
+
+Table 6:
+       Point estimates -- models R1 and M1 to M6 -- PATH:\kpsw\var 
+        VAR3SEIR.RTS (Program - calls programs KPSW3.INP and CTINIT3.PGM) 
+        VAR3SEIR.OUT (Output)         
+        XVAR6UM1.RTS (Program - calls programs KPSW1.INP and CTINIT.PGM) 
+         M1.OUT     (Output)         
+        XVAR6UM2.RTS (Program - calls programs KPSW1.INP and CTINIT.PGM) 
+         M2.OUT     (Output)         
+        XVAR6UM3.RTS (Program - calls programs KPSW1.INP and CTINIT.PGM) 
+         M3.OUT     (Output)         
+        XVAR6UM4.RTS (Program - calls programs KPSW1.INP and CTINIT.PGM) 
+         M4.OUT     (Output)         
+        XVAR5UM5.RTS (Program - calls programs KPSW1.INP and CTINIT.PGM) 
+         M5.OUT     (Output)         
+        XVAR5UM6.RTS (Program - calls programs KPSW1.INP and CTINIT.PGM) 
+         M6.OUT     (Output)         
+
+        WALD statistics -- PATH:\kpsw\dols
+             cv_ols.gss (Program - calls procedure dols_ar.prc)
+             cv_ols.out (Output)
+
+                          FIGURES
+                          ------- 
+
+       NOTE : The path of all programs listed below is \KPSW\PLOTS.
+
+
+FIGURE 1.
+         KPSWG.GSS (program - reads file f12asc.dat )
+
+FIGURE 2.
+         KPSWG.GSS (program - reads files f31asc.dat and f32asc.dat)
+       
+FIGURE 3. Historical Decompositions.
+          Run the programs in the following order :
+
+          I. Calculate Impulse Responses and Variance Decompositions
+            XVAR6U.RTS (program - uses programs CTVECM63.pgm, XIRF.pgm, and               
+                        XTCALC.pgm).
+            XVAR6U.OUT (output file)  
+            Relevant ASCII files saved : PRME6U_6.ASC
+                                         PRMS6U_6.ASC 
+                                         IRFE6U_6.ASC
+                                         IRFL6U_6.ASC
+
+          II. RATS plot
+             PLTDCP6.RTS (program - uses as inputs ASCII files listed above)
+             PLTDCP6.OUT (output file)
+             The program saves key ASCII file to be used below : DCMP6U_6.ASC
+
+          III. Reformatting
+             RWASC.GSS (program - transforms DCMP6U_6.ASC into file F5ASC.DAT)
+             RWASC.OUT (output file)
+
+          IV. PLOT
+             KPSWG.GSS (program - reads file f5asc.dat)
+               
+FIGURE 4 - Impulse Responses.
+          Run the programs in the following order :
+
+          I. Calculate Impulse Responses and Variance Decompositions
+            XVAR6U.RTS (program - uses programs CTVECM63.pgm, XIRF.pgm, and               
+                        XTCALC.pgm).
+            XVAR6U.OUT (output file)  
+            Relevant ASCII file saved : IRFL6U_6.ASC
+
+          II. Reformatting
+             RWASC.GSS (program - transforms IRFL6U_6.ASC into files 
+                        F61ASC.DAT, F62ASC.DAT, and F63ASC.DAT)
+             RWASC.OUT (output file)
+
+          III. PLOT
+             KPSWG.GSS (program - reads files F61ASC.DAT, F62ASC.DAT, and
+                        F63ASC.DAT)
+
+FIGURE 5 - Solow Residuals.
+          Run the programs in the following order :
+
+          I. Calculate Impulse Responses and Variance Decompositions
+            XVAR6U.RTS (program - uses programs CTVECM63.pgm, XIRF.pgm, and               
+                        XTCALC.pgm).
+            XVAR6U.OUT (output file)  
+            Relevant ASCII file saved : PRMS6U_6.ASC
+
+          II. Reformatting.
+             RWASC.RTS (program - reads file PRMS6U_6.ASC, edits CT6.DAT) 
+
+          III. Intermediate Calculations
+             KPAN5.RTS (program - reads file CT6.DAT, edits F8ASC.DAT)
+
+          IV. PLOT
+             KPSWG.GSS (program - reads file f8asc.dat)
+               
+FIGURE 6 - Trend Output.
+          Run the programs in the following order :
+
+          I. Calculate Impulse Responses and Variance Decompositions
+            XVAR6U.RTS (program - uses programs CTVECM63.pgm, XIRF.pgm, and               
+                        XTCALC.pgm).
+            XVAR6U.OUT (output file)  
+            Relevant ASCII file saved : PRMS6U_6.ASC
+
+          II. Reformatting.
+             RWASC.RTS (program - reads file PRMS6U_6.ASC, edits CT6.DAT) 
+
+          III. Intermediate Calculations
+             KPAN5.RTS (program - reads file CT6.DAT, edits F7ASC.DAT)
+
+          IV. PLOT
+             KPSWG.GSS (program - reads file f7asc.dat)
+
+

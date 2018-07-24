@@ -1,0 +1,40 @@
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+Found 8 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+Computing dynamic model derivatives:
+ - order 1
+ - order 2
+Processing outputs ...
+done
+Preprocessing completed.
+
+STEADY-STATE RESULTS:
+
+Y 		 1.1517
+C 		 0.863777
+K 		 11.517
+L 		 0.333333
+A 		 1
+R 		 0.035
+W 		 2.24582
+I 		 0.287926
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : Euler equation
+Equation number 2 : 0 : labor supply
+Equation number 3 : 0 : capital law of motion
+Equation number 4 : 0 : market clearing/resource constraint
+Equation number 5 : 0 : production function
+Equation number 6 : 0 : labor demand
+Equation number 7 : 0 : capital demand
+Equation number 8 : 0 : exogenous TFP process
+
+
+Total computing time : 0h00m00s

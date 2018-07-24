@@ -1,0 +1,771 @@
+* XVAR6UVD.RTS, acb 8/8/89
+*
+* XVAR6u.RTS, MWW 6/16/89
+*  Rats program to estimate the six variable model
+*
+*  In this program the money demand disturbance is I(0), so that the 
+*   cointegrating relation from the money demand equation is enforced.
+*
+* Program is slightly modified version of above MWW Program
+* Calculation of standard errors on VDs only
+* See Rats manual section on Monte Carlo Integration
+*
+bma com 3500 mat 100 glo 250
+*************
+* Set up VECM
+*
+*  (i)    Model definition parameters
+*
+ieval nv=6 ;ieval nk=3
+ieval nciv=nv-nk;
+ieval nlags=8 ;ieval nimp=120
+ieval nac=27
+ieval neq=2*nv+nciv
+ieval mxvr=nv*nlags+4
+seed 123
+sou \kpsw\var\kpsw1.inp
+env err=1 war=1
+ieval n1=(54:1) ;ieval n2=(88:4)
+ieval nest1=n1 ; ieval nest2=n2
+ieval nimpr = 32   ;* number of impulses to report
+*eval ep = -3.914 ; eval ey = 1.100; * Money demand elasticity (dp), 54:1-88:4
+eval ep = -.01343*400 ;eval ey = 1.197; * Money demand elast(fygm3), 54:1-88:4
+*eval ep = -4.717 ; eval ey = 1.183; * Money dem elast(fygm3), orig, 54:1-88:4
+*eval ep = -4.979 ; eval ey = 1.199; * Money demand elast (fycp), 54:1-88:4
+*eval ep = -4.736 ; eval ey = 1.218; * Money demand elast (fyaaac), 54:1-88:4
+*eval phi1=1.973 ; eval phi2=-1.008; * Johansen MLE's, 54:1 - 88:4
+eval phi1=0.00334*400;eval phi2 = -0.0028*400; * Stock-Watson MLE's, 54:1-88:4
+*eval phi1=1.16;eval phi2 = -0.55; * Stock-Watson MLE's, 54:1-88:4, original
+*eval ep = -4.803  ;eval ey = 1.210; *  Money demand elast (fycp), 53:1-88:4
+*
+*  (ii)   Basic variables in model, in first differences
+* 
+ieval k=0
+dofor yy=y c in mp rgs dp
+ ieval k=k+1
+ set k / = yy(t)
+end dofor
+*
+*  (iii)  Cointegrating vectors (either theoretical or empirical), to be
+*         entered as columns of alpha
+*
+dim alpha(nv,nv-nk) a0(nv,nk)
+read(unit=input) alpha
+-1 -1 -8
+ 1  0  0
+ 0  1  0
+ 0  0  1
+ 0  0 -9
+ 0  0  0
+eval alpha(1,3)=-ey
+eval alpha(5,3)=-ep
+*eval alpha(5,1)=-phi1 ; eval alpha(6,1)=phi1
+*eval alpha(5,2)=-phi2 ; eval alpha(6,2)=phi2
+*
+* Desired form for "A" (factor loading) matrix -- must:
+*   (i)  be of form AHAT=A0*P, where P is kxk lower triangular with
+*        ones on the diagonal
+*   (ii) have tr(ALPHA)*A0=0, i.e. be orthogonal to cointegrating vectors
+*
+read(unit=input) a0
+ 1   0   0
+ 1   0   0
+ 1   0   0
+ 8   9   7
+ 0   1   1
+ 0   1   0
+*
+eval a0(4,1)=ey
+eval a0(4,2)=ep
+*eval a0(2,3)=phi1 ; eval a0(3,3)=phi2
+eval a0(4,3)=ep
+*
+declare rect xmark(nciv,nk)
+mat xmark=(tr(alpha))*a0
+write xmark
+*
+*--------------------------------------------------*
+* Estimate model, A, Impulse responses, Variance Decomps
+*
+output noecho
+* CTVECM6.PGM, 
+*  Program to estimate vecm for model 5k in KPSW project
+*    Last modified by MWW 6/19/89
+*  
+* Constructs, estimates VECM version of common trends model, computes
+*     moving average representation
+*
+ieval neq=2*nv+nciv
+ieval iy1=1 ;ieval iy2=iy1+nv-1
+ieval idy1=iy2+1 ;ieval idy2=idy1+nv-1
+ieval iz1=idy2+1 ;ieval iz2=iz1+nciv-1
+ieval ieps1=iz2+1 ;ieval ieps2=ieps1+nv-1  ;*  Var residuals
+ieval istr1=ieps2+1;ieval istr2=istr1+nv-1 ;*  Struct. residuals
+ieval iscr=ieps2+1
+dis 'Number of Series Needed '
+write istr2
+dis 'Number of Series allocated '
+write nac
+*
+* Check to make sure that series were allocated properly
+*
+if   nac .lt. ieps2
+ {
+  dis 'Too few series allocated '
+  dis 'Change nac in main program '
+  dis 'Junk will follow !!!!!!!!!!'
+  clear
+ }
+end if
+labels iy1 to iy2
+# 'y' 'c' 'i' 'x4' 'mp' 'x6'
+labels idy1 to idy2
+# 'dy' 'dc' 'di' 'dx4' 'dmp' 'dx6'
+labels iz1 to iz2
+# 'z1' 'z2' 'z3'
+dim c1(nv,nv) r0(nv,nv) r1(nv,nv) r2(nv,nk) r3(nk,nk)
+dim sel(nk,nv) as(nv,nk) aparm(nk,nk) ahat(nv,nk) sigeta(nv) xout(nv+1)
+dim h(nv,nv) hinv(nv,nv) hs(nv,nv) hsinv(nv,nv) hsinvu(nv,nv) qk(2*nv,nv)
+dim cc(nv,nv) v2(nv,nv) v3(nk,nk)
+** initialize matrices
+mat sel=const(0.0)
+do i=1,nk ;eval sel(i,i)=1.0 ;end do i
+*
+* create differences, error correction variables, lagged values
+*
+do k1=iy1,iy2
+ diff k1 / 1 (k1+nv)
+end do k1
+do k1=iz1,iz2
+ zer k1
+ do j=1,nv
+  ieval k2=iy1+j-1
+  set k1 / = k1(t)+alpha(j,k1-iz1+1)*k2(t)
+ end do j
+end do k1
+dis ' Check that data series have been properly constructed: '
+dis ' '
+dis '                  y runs from' iy1 'to' iy2
+dis '            delta y runs from' idy1 'to' idy2
+dis '                  z runs from' iz1 'to' iz2
+print(dates) n1-nlags-1 n1+2 iy1 to iz2
+* ------ construct system
+system 1 to nv
+var idy1 to idy2
+lags 1 to nlags
+det constant -iz1 1 1 -(iz1+1) 1 1 -(iz1+2) 1 1 
+end(system)
+*
+* Additional equations specifying levels: variabls iy1 to iy2
+do i = 1,nv
+ equ(identity) i+nv i ;#i+nv -i 1 1 ;ass i+nv ;#1.0 1.0
+end do i
+*
+*
+* Additional equations specifying error correction terms
+*
+do i=2*nv+1,2*nv+nciv
+ ieval i1=i-2*nv
+ ieval k1=iz1+i-(2*nv+1) 
+ equ(identity) i k1 ;#iy1 to iy2
+ ass i ;#alpha(1,i1) alpha(2,i1) alpha(3,i1) $
+         alpha(4,i1) alpha(5,i1) alpha(6,i1)
+end do i
+*****
+estimate(print) nest1 nest2 ieps1
+dis ' Epsilon variance-covariance matrix: '
+vcv(matrix=veps) nest1 nest2 ;#ieps1 to ieps2
+dis ' Log determinant of VCV matrix = ' detln
+if n1.lt.nest1
+ begin
+ do i=ieps1,ieps2
+  set i n1 nest1 = 0.0
+ endo
+ end
+endif
+if n2.gt.nest2
+ begin
+ do i=ieps1,ieps2
+  set i nest2 n2 = 0.0
+ endo
+ end
+endif
+*print n1 n2 ieps1 to ieps2
+*
+* Set up Scratch storage for IRF's
+*
+scratch(matrix=impblk) nv*nv 1 nimp impulses
+list ieqn = 1 to neq
+*******
+* Set up for Monte-Carlo Integration
+*******
+ieval ndraws=5
+ieval nimpr=120
+ieval ncoef=nv*nlags+4
+cmom(equation=1,nodepvar,matrix=xxx) n1 n2
+declare rect sxx(ncoef,ncoef) sinv(nv,nv) swish(nv,nv) $
+   ranw(nv,nobs) rantr(nobs,nv) ranc(ncoef,nv) sxxuover 
+declare vector betadraw betaols(ncoef*nv) sxxu(ncoef*nv)
+declare rec vdnimpl(nv,nv)
+dim sdm(nv,nv) sdmc(nv,nv)
+dim f1(nk,nv) g1(nv,nv) fstar(nv,nv)
+ieval nvdp=7
+ dim ivd(nvdp)
+ read(unit=input) ivd
+ 1 4 8 12 16 20 24
+ieval nvd=fix(ivd(nvdp))
+overlay sxxu(1) with sxxuover(ncoef,nv) 
+overlay coeff(1,1) with betadraw(ncoef*nv) 
+matrix sxx = tr( decomp( inv(xxx) ) )
+matrix sinv = tr(decomp(inv(veps)))
+matrix betaols = betadraw
+*
+declare rect fifdvd(nvd,nv*nk) sefdvd(nvd,nv*nk) filvvd(nvd+1,nv*nk) $
+ selvvd(nvd+1,nv*nk) fdvdbeta(nvd,nv*nk) lvvdbeta(nvd+1,nv*nk) $
+ vdsum(nvd+1,2*nv) tffdvd(nvd,nv) tsfdvd(nvd,nv) tbfdvd(nvd,nv) $
+ tflvvd(nvd+1,nv) tslvvd(nvd+1,nv) tblvvd(nvd+1,nv) 
+matrix fifdvd=sefdvd=fdvdbeta=const(0.0)
+matrix filvvd=selvvd=lvvdbeta=const(0.0)
+matrix tffdvd=tsfdvd=tbfdvd=const(0.0)
+matrix tflvvd=tslvvd=tblvvd=const(0.0)
+*****
+* Do loop over Monte-Carlo draws
+*****
+do draws=1,(ndraws+1)
+   matrix ranw = ran(1.0/sqrt(nobs))
+   matrix rantr = tr(ranw)*sinv 
+   matrix swish = decomp(inv( (tr(rantr)*rantr) ))
+   matrix ranc = ran(1.0)
+   matrix sxxuover = tr(sxx)*ranc
+   if draws>1
+      matrix betadraw = betaols+kronid(swish,sxxu)
+   else
+      matrix betadraw = betaols
+mat r1=iden(1.0)
+do i=1,nv
+ impulse(noprint,decomp=r1) neq nimp i 
+ cards ieqn (impulses+(i-1)*nv+ieqn)*(ieqn .le. nv) 1 ieqn*(ieqn .le. nv)
+end do i
+* xirf.PGM  
+*  Program for calculating IRF's and Variance Decomps
+*  of up to 7 variable model for KPSW.
+*
+*   Last modified by MWW 6/19/89, JHS 7/9/89
+*
+* Estimates parameters of A matrix, construct rotation
+*   estimate initial H matrix from C(1)'C(1) null right eigenvectors
+*
+*       First compute cumulative C(L), overwrite current C(L)
+*
+do i=1,nv
+ do j=1,nv
+  ieval k=impulses+(j-1)*nv+i
+  acc k 1 nimp k 1
+  eval c1(i,j) = k(nimp)
+ end do j
+end do i
+mat sdm = c1*veps*(tr(c1))       ;* Spectral Density matrix at zero
+mat sdmc=sdm
+do i = 1, nv;
+ do j = 1,i;
+  eval sdmc(i,j)=sdmc(i,j)/(sqrt(sdm(i,i)*sdm(j,j)))
+end do j
+end do i
+*
+mat cc = tr(c1)*c1
+eigen cc evals hinv
+mat h=inv(hinv)
+*
+****************************************************************************
+************** Start of calculation of A matrix, rotation weights **********
+****************************************************************************
+*
+mat r2=a0*inv(tr(a0)*a0)
+mat v3=tr(r2)*c1*veps*tr(c1)*r2
+do i=1,nk
+ do j=1,nk ; eval r3(i,j) = v3(i,j)/sqrt(v3(i,i)*v3(j,j)) ; endo;
+endo
+mat aparm=decomp(v3)
+mat v3=iden(1.0)
+do i=1,nk ;eval v3(i,i)=1/aparm(i,i) ;end do i
+mat aparm=aparm*v3
+mat ahat=a0*aparm
+mat f1=tr(r2)*c1                    ;* F , k x n
+mat sdmc=iden(1.0)                  ;* n x n identity
+mat cc = sdmc - tr(f1)*(inv(f1*tr(f1)))*f1
+eigen cc evals hinv
+mat g1=inv(hinv)
+mat fstar=const(0.0)
+do i=1,nk
+ do j=1,nv ; eval fstar(i,j)=f1(i,j) ; endo
+endo
+do i=(nk+1),nv
+ do j=1,nv ; eval fstar(i,j)=g1(i-nk,j) ; endo
+endo
+* r1 should be block diagonal, with (n-k)x(n-k) identity matrix SW block
+*mat r1=fstar*tr(fstar)
+mat v2 = fstar*veps*tr(fstar)
+mat h = decomp(v2)
+mat cc = iden(1.0)
+do i=1,nv; eval cc(i,i)=1/sqrt(v2(i,i)) ; endo
+* this next line matches prior version of xirf.pgm (pre 7/10/89) ...
+do i=1,nv; eval cc(i,i)=1/h(i,i) ; endo  
+* ... while this next line provides different scaling
+*do i=1,nv; eval cc(i,i)=1/sqrt(v2(i,i)) ; endo
+mat h=h*cc;
+mat hinv = inv(h)
+mat hs=hinv*fstar
+mat hsinv = inv(hs)
+
+mat v2=hs*veps*tr(hs)
+*
+mat r0 = decomp(v2)
+mat hsinvu=hsinv*r0    ;*  used for st. dev impulses in Errors for var dec.
+                       ;*  hsinv is used for unit shocks in impule for irf's
+****************************************************************************
+************** end of calculation of A matrix, rotation weights **********
+****************************************************************************
+*
+* Calculate impulse response functions
+*
+list ieqn = 1 to neq
+do i=1,nv
+ impulse(noprint,decomp=hsinv) neq nimp i 
+ cards ieqn (impulses+(i-1)*nv+ieqn)*(ieqn .le. nv) 1 ieqn*(ieqn .le. nv)
+end do i
+*
+* Create IRFs for levels 
+do i=1,nv
+ do j=1,nv
+  ieval k=impulses+(j-1)*nv+i
+  acc k 1 nimp k 1
+ end do j
+end do i
+*
+* Calculate variance Decomp for levels at horizon nimp
+*
+do i=1,nv
+ eval tempt=0.
+ do j=1,nv
+  ieval k=Impulses+(j-1)*nv+i
+  eval tempt=tempt+k(nimp)*k(nimp)*v2(j,j)
+ end do j
+ do j=1,nv
+  ieval k=Impulses+(j-1)*nv+i
+  eval vdnimpl(i,j)=100*(k(nimp)*k(nimp)*v2(j,j))/tempt
+ end do j
+end do i
+*
+* Calculate Variance Decompositions
+*
+list ieqn = 1 to neq
+ errors(noprint,save=vdmat,decomp=hsinvu) neq nvd
+ cards ieqn
+*
+* Accumulate values of VDs for First Differences and Levels
+*
+do i9=1,nvd 
+do i=1,nk 
+do j=1,nv
+   ieval jj=(j-1)*nv+i
+   ieval jk=nv*nv+jj
+   ieval jl=(i-1)*nv+j
+   if draws>1 
+    {
+    eval fifdvd(i9,jl)=fifdvd(i9,jl)+vdmat(i9,jj)
+    eval sefdvd(i9,jl)=sefdvd(i9,jl)+vdmat(i9,jj)**2
+    eval filvvd(i9,jl)=filvvd(i9,jl)+vdmat(i9,jk)
+    eval selvvd(i9,jl)=selvvd(i9,jl)+vdmat(i9,jk)**2
+    }
+   else 
+    {
+    eval fdvdbeta(i9,jl)=vdmat(i9,jj)
+    eval lvvdbeta(i9,jl)=vdmat(i9,jk)
+    }
+end do j 
+end do i 
+end do i9
+*
+do i = 1,nv
+ do j = 1,nk
+  ieval jj=(j-1)*nv+i
+  if draws>1 {
+   eval filvvd(nvd+1,jj)=filvvd(nvd+1,jj)+vdnimpl(i,j)
+   eval selvvd(nvd+1,jj)=selvvd(nvd+1,jj)+vdnimpl(i,j)**2
+   }
+  else
+   eval lvvdbeta(nvd+1,jj)=vdnimpl(i,j)
+ end do j
+end do i
+***
+*Do Necessary Calculations for Sums of Variance Portions due to PCs
+***
+matrix vdsum=const(0.0)
+do i9 = 1,nvd
+  do i=1,nv
+     do j=1,nk
+        ieval jj=(i-1)*nv+j
+        ieval jk=nv*nv+jj
+        eval vdsum(i9,i)=vdsum(i9,i)+vdmat(i9,jj)
+        eval vdsum(i9,nv+i)=vdsum(i9,nv+i)+vdmat(i9,jk)
+     end do j
+  end do i
+end do i9
+do i=1,nv
+   do j=1,nk
+      ieval jj=(i-1)*nv+j
+      ieval jk=nv*nv+jj
+      eval vdsum(nvd+1,nv+i)=vdsum(nvd+1,nv+i)+vdnimpl(i,j)
+   end do j
+end do i
+do i9=1,nvd 
+do i=1,nv
+   if draws>1 
+    {
+    eval tffdvd(i9,i)=tffdvd(i9,i)+vdsum(i9,i)
+    eval tsfdvd(i9,i)=tsfdvd(i9,i)+vdsum(i9,i)**2
+    eval tflvvd(i9,i)=tflvvd(i9,i)+vdsum(i9,nv+i)
+    eval tslvvd(i9,i)=tslvvd(i9,i)+vdsum(i9,nv+i)**2
+    }
+   else 
+    {
+    eval tbfdvd(i9,i)=vdsum(i9,i)
+    eval tblvvd(i9,i)=vdsum(i9,nv+i)
+    }
+end do i 
+end do i9
+*
+do i = 1,nv
+  if draws>1 {
+   eval tflvvd(nvd+1,i)=tflvvd(nvd+1,i)+vdsum(nvd+1,nv+i)
+   eval tslvvd(nvd+1,i)=tslvvd(nvd+1,i)+vdsum(nvd+1,nv+i)**2
+   }
+  else
+   eval tblvvd(nvd+1,i)=vdsum(nvd+1,nv+i)
+end do i
+end do draws
+*
+declare rec fdvdmse(nvd,nv*nk) lvvdmse(nvd+1,nv*nk) tmfdvd(nvd,nv) $
+ tmlvvd(nvd+1,nv)  
+matrix fifdvd=scale(1.0/ndraws)*fifdvd
+matrix sefdvd=scale(1.0/ndraws)*sefdvd
+matrix filvvd=scale(1.0/ndraws)*filvvd
+matrix selvvd=scale(1.0/ndraws)*selvvd
+matrix tffdvd=scale(1.0/ndraws)*tffdvd
+matrix tsfdvd=scale(1.0/ndraws)*tsfdvd
+matrix tflvvd=scale(1.0/ndraws)*tflvvd
+matrix tslvvd=scale(1.0/ndraws)*tslvvd
+ewise fdvdmse(i,j)=sqrt(sefdvd(i,j)-2.0*fifdvd(i,j)*fdvdbeta(i,j)+ $
+                 fdvdbeta(i,j)**2)
+ewise lvvdmse(i,j)=sqrt(selvvd(i,j)-2.0*filvvd(i,j)*lvvdbeta(i,j)+ $
+                 lvvdbeta(i,j)**2)
+ewise tmfdvd(i,j)=sqrt(tsfdvd(i,j)-2.0*tffdvd(i,j)*tbfdvd(i,j)+tbfdvd(i,j)**2)
+ewise tmlvvd(i,j)=sqrt(tslvvd(i,j)-2.0*tflvvd(i,j)*tblvvd(i,j)+tblvvd(i,j)**2)
+ewise sefdvd(i,j)=sqrt(sefdvd(i,j)-fifdvd(i,j)**2)
+ewise selvvd(i,j)=sqrt(selvvd(i,j)-filvvd(i,j)**2)
+ewise tsfdvd(i,j)=sqrt(tsfdvd(i,j)-tffdvd(i,j)**2)
+ewise tslvvd(i,j)=sqrt(tslvvd(i,j)-tflvvd(i,j)**2)
+*
+* write out VD table
+*
+declare rect dsplvdf(nvdp+1,nv+1) dsplvds(nvdp+1,nv+1)
+do i=1,nk
+  ieval ii=(i-1)*nv
+  ieval iv=1
+  do i9=1,nvd
+    if (i9.eq.ivd(iv))
+     begin
+      eval dsplvdf(iv,1)=i9
+      eval dsplvds(iv,1)=i9
+      do j=1,nv
+        eval dsplvdf(iv,j+1)=fdvdbeta(i9,ii+j)
+        eval dsplvds(iv,j+1)=fdvdmse(i9,ii+j)
+      end do j   
+      ieval iv=iv+1
+     end
+  end do i9
+  ieval i9=i9+1
+  eval dsplvdf(iv,1)=0.0
+  eval dsplvds(iv,1)=0.0
+  do j=1,nv
+    eval dsplvdf(iv,j+1)=0.0
+    eval dsplvds(iv,j+1)=0.0
+  end do j
+  dis ' '
+  dis ' '
+  dis '                           Table' i
+  dis ' '
+  dis '      BHat Fraction of Variance of First Differences Due'
+  dis '              to Innovation in Component #' i 
+  dis ' '
+  dis '  Horizon    vble#1    vbl#2  . . . '
+  dis ' '
+  write(noskip,format='(f8.0,6f10.2)') dsplvdf
+  dis ' '
+  dis ' '
+  dis '      RMSE Fraction of Variance of First Differences Due'
+  dis '              to Innovation in Component #' i
+  dis ' '
+  dis '  Horizon    vble#1    vbl#2  . . . '
+  dis ' '
+  write(noskip,format='(f8.0,6f10.2)') dsplvds
+  dis ' '
+  ieval iv=1
+  do i9=1,nvd
+    if (i9.eq.ivd(iv))
+     begin
+      eval dsplvdf(iv,1)=i9
+      eval dsplvds(iv,1)=i9
+      do j=1,nv
+        eval dsplvdf(iv,j+1)=fifdvd(i9,ii+j)
+        eval dsplvds(iv,j+1)=sefdvd(i9,ii+j)
+      end do j   
+      ieval iv=iv+1
+     end
+  end do i9
+  ieval i9=i9+1
+  eval dsplvdf(iv,1)=0.0
+  eval dsplvds(iv,1)=0.0
+  do j=1,nv
+    eval dsplvdf(iv,j+1)=0.0
+    eval dsplvds(iv,j+1)=0.0
+  end do j
+ dis ' '
+ dis '      Mean Fraction of Variance of First Differences Due'
+ dis '              to Innovation in Component #' i
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvdf
+ dis ' '
+ dis ' '
+ dis '      SDev Fraction of Variance of First Differences Due'
+ dis '              to Innovation in Component #' i
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvds
+ dis ' '
+  ieval iv=1
+  do i9=1,nvd
+    if (i9.eq.ivd(iv))
+     begin
+      eval dsplvdf(iv,1)=i9
+      eval dsplvds(iv,1)=i9
+      do j=1,nv
+        eval dsplvdf(iv,j+1)=lvvdbeta(i9,ii+j)
+        eval dsplvds(iv,j+1)=lvvdmse(i9,ii+j)
+      end do j   
+      ieval iv=iv+1
+     end
+  end do i9
+  ieval i9=i9+1
+  eval dsplvdf(iv,1)=nimp
+  eval dsplvds(iv,1)=nimp
+  do j=1,nv
+    eval dsplvdf(iv,j+1)=lvvdbeta(i9,ii+j)
+    eval dsplvds(iv,j+1)=lvvdmse(i9,ii+j)
+  end do j
+  dis ' '
+  dis '          BHat Fraction of Variance of Levels Due'
+  dis '              to Innovation in Component #' i 
+  dis ' '
+  dis '  Horizon    vble#1    vbl#2  . . . '
+  dis ' '
+  write(noskip,format='(f8.0,6f10.2)') dsplvdf
+  dis ' '
+  dis ' '
+  dis '          RMSE Fraction of Variance of Levels Due'
+  dis '              to Innovation in Component #' i
+  dis ' '
+  dis '  Horizon    vble#1    vbl#2  . . . '
+  dis ' '
+  write(noskip,format='(f8.0,6f10.2)') dsplvds
+  dis ' '
+  ieval iv=1
+  do i9=1,nvd
+    if (i9.eq.ivd(iv))
+     begin
+      eval dsplvdf(iv,1)=i9
+      eval dsplvds(iv,1)=i9
+      do j=1,nv
+        eval dsplvdf(iv,j+1)=filvvd(i9,ii+j)
+        eval dsplvds(iv,j+1)=selvvd(i9,ii+j)
+      end do j   
+      ieval iv=iv+1
+     end
+  end do i9
+  ieval i9=i9+1
+  eval dsplvdf(iv,1)=nimp
+  eval dsplvds(iv,1)=nimp
+  do j=1,nv
+    eval dsplvdf(iv,j+1)=filvvd(i9,ii+j)
+    eval dsplvds(iv,j+1)=selvvd(i9,ii+j)
+  end do j
+ dis ' '
+ dis '          Mean Fraction of Variance of Levels Due'
+ dis '              to Innovation in Component #' i
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvdf
+ dis ' '
+ dis ' '
+ dis '          SDev Fraction of Variance of Levels Due'
+ dis '              to Innovation in Component #' i
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvds
+ dis ' '
+end do i  
+ieval iv=1
+do i9=1,nvd
+  if (i9.eq.ivd(iv))
+   begin
+    eval dsplvdf(iv,1)=i9
+    eval dsplvds(iv,1)=i9
+    do j=1,nv
+      eval dsplvdf(iv,j+1)=tbfdvd(i9,j)
+      eval dsplvds(iv,j+1)=tmfdvd(i9,j)
+    end do j   
+    ieval iv=iv+1
+   end
+end do i9
+ieval i9=i9+1
+eval dsplvdf(iv,1)=0.0
+eval dsplvds(iv,1)=0.0
+do j=1,nv
+  eval dsplvdf(iv,j+1)=0.0
+  eval dsplvds(iv,j+1)=0.0
+end do j
+dis ' '
+dis ' '
+dis '                           Table' nk+1
+dis ' '
+dis '      BHat Fraction of Variance of First Differences Due'
+dis '           to Innovation in all Permanent Components'  
+dis ' '
+dis '  Horizon    vble#1    vbl#2  . . . '
+dis ' '
+write(noskip,format='(f8.0,6f10.2)') dsplvdf
+dis ' '
+dis ' '
+dis '      RMSE Fraction of Variance of First Differences Due'
+dis '           to Innovation in all Permanent Components' 
+dis ' '
+dis '  Horizon    vble#1    vbl#2  . . . '
+dis ' '
+write(noskip,format='(f8.0,6f10.2)') dsplvds
+dis ' '
+ieval iv=1
+do i9=1,nvd
+  if (i9.eq.ivd(iv))
+   begin
+    eval dsplvdf(iv,1)=i9
+    eval dsplvds(iv,1)=i9
+    do j=1,nv
+      eval dsplvdf(iv,j+1)=tffdvd(i9,j)
+      eval dsplvds(iv,j+1)=tsfdvd(i9,j)
+    end do j   
+    ieval iv=iv+1
+   end
+end do i9
+ieval i9=i9+1
+eval dsplvdf(iv,1)=0.0
+eval dsplvds(iv,1)=0.0
+do j=1,nv
+  eval dsplvdf(iv,j+1)=0.0
+  eval dsplvds(iv,j+1)=0.0
+end do j
+dis ' '
+dis '      Mean Fraction of Variance of First Differences Due'
+dis '           to Innovation in All Permanent Components' 
+dis ' '
+dis '  Horizon    vble#1    vbl#2  . . . '
+dis ' '
+write(noskip,format='(f8.0,6f10.2)') dsplvdf
+dis ' '
+dis ' '
+dis '      SDev Fraction of Variance of First Differences Due'
+dis '           to Innovation in All Permanent Components' 
+dis ' '
+dis '  Horizon    vble#1    vbl#2  . . . '
+dis ' '
+write(noskip,format='(f8.0,6f10.2)') dsplvds
+dis ' '
+ ieval iv=1
+ do i9=1,nvd
+   if (i9.eq.ivd(iv))
+    begin
+     eval dsplvdf(iv,1)=i9
+     eval dsplvds(iv,1)=i9
+     do j=1,nv
+       eval dsplvdf(iv,j+1)=tblvvd(i9,j)
+       eval dsplvds(iv,j+1)=tmlvvd(i9,j)
+     end do j   
+     ieval iv=iv+1
+    end
+ end do i9
+ ieval i9=i9+1
+ eval dsplvdf(iv,1)=nimp
+ eval dsplvds(iv,1)=nimp
+ do j=1,nv
+   eval dsplvdf(iv,j+1)=tblvvd(i9,j)
+   eval dsplvds(iv,j+1)=tmlvvd(i9,j)
+ end do j
+ dis ' '
+ dis '          BHat Fraction of Variance of Levels Due'
+ dis '         to Innovation in All Permanent Components'  
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvdf
+ dis ' '
+ dis ' '
+ dis '          RMSE Fraction of Variance of Levels Due'
+ dis '         to Innovation in All Permanent Components' 
+ dis ' '
+ dis '  Horizon    vble#1    vbl#2  . . . '
+ dis ' '
+ write(noskip,format='(f8.0,6f10.2)') dsplvds
+ dis ' '
+ ieval iv=1
+ do i9=1,nvd
+   if (i9.eq.ivd(iv))
+    begin
+     eval dsplvdf(iv,1)=i9
+     eval dsplvds(iv,1)=i9
+     do j=1,nv
+       eval dsplvdf(iv,j+1)=tflvvd(i9,j)
+       eval dsplvds(iv,j+1)=tslvvd(i9,j)
+     end do j   
+     ieval iv=iv+1
+    end
+ end do i9
+ ieval i9=i9+1
+ eval dsplvdf(iv,1)=nimp
+ eval dsplvds(iv,1)=nimp
+ do j=1,nv
+   eval dsplvdf(iv,j+1)=tflvvd(i9,j)
+   eval dsplvds(iv,j+1)=tslvvd(i9,j)
+ end do j
+dis ' '
+dis '          Mean Fraction of Variance of Levels Due'
+dis '         to Innovation in All Permanent Components'
+dis ' '
+dis '  Horizon    vble#1    vbl#2  . . . '
+dis ' '
+write(noskip,format='(f8.0,6f10.2)') dsplvdf
+dis ' '
+dis ' '
+dis '          SDev Fraction of Variance of Levels Due'
+dis '         to Innovation in All Permanent Components' 
+dis ' '
+dis '  Horizon    vble#1    vbl#2  . . . '
+dis ' '
+write(noskip,format='(f8.0,6f10.2)') dsplvds
+dis ' '
+end
+
+

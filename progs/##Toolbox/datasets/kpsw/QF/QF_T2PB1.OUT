@@ -1,0 +1,43 @@
+DATE :  9/26/1990
+TIME :  3:42:00
+ 
+ 
+ 
+ 
+                                 Data file = D:\KPSW\DATA\CYRDP.PRN
+      Total number of time periods in file =  168 
+                First period used for test =   24 
+                 Last period used for test =  168 
+                     Number of data series =    2 
+                             Preprocessing = Mean removed
+                 H0 : Number of unit roots =    2 
+ 
+ 
+ 
+      H1 : Number of unit roots = 1 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                    -59.1317              0.00 
+            1                    -46.5795              0.00 
+            2                    -51.5175              0.00 
+            3                    -57.5408              0.00 
+            4                    -59.6915              0.00 
+            5                    -62.2322              0.00 
+ 
+ 
+ 
+      H2 : Number of unit roots = 0 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                    -16.2297              0.00 
+            1                    -19.2410              0.00 
+            2                    -19.2295              0.00 
+            3                    -22.1467              0.00 
+            4                    -19.7143              0.00 
+            5                    -16.5107              0.00 
+ 
+ 
+ 
+

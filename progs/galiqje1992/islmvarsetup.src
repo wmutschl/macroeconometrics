@@ -1,0 +1,96 @@
+*
+* Replication file for Gali, "How Well Does the IS-LM Model Fit Postwar
+* U.S. Data", QJE 1992, vol 107, no. 2, pp 709-738.
+*
+* Set up and estimate the VAR. Data should already have been read in.
+*
+system(model=islm)
+variables cygr cdrate crr crmgr
+lags 1 to 4
+end(system)
+*
+estimate(noprint)
+*
+* Define the identities for accumulating growth rates and other variables
+* constructed from the four variables included in the VAR.
+*
+equation(identity,coeffs=||1.0,1.0||) yaccum logy
+# logy{1} cygr
+equation(identity,coeffs=||1.0,1.0||) raccum tb3
+# tb3{1} cdrate
+equation(identity,coeffs=||1.0,-1.0||) infid inf
+# tb3 crr
+equation(identity,coeffs=||1.0,1.0||) realaccum realm1
+# realm1{1} crmgr
+group identities yaccum raccum infid realaccum
+*
+* Save information out of the VAR. (We'll need this later for doing
+* Monte Carlo integration).
+*
+compute masums =inv(%varlagsums)
+compute varxx  =%xx
+compute varnreg=%nreg
+compute fstart =%regstart()
+compute fend   =%regend()
+*
+compute masums=inv(%varlagsums)
+*
+dec rect lr(4,4)
+dec rect sr(4,4)
+dec rect sr_id(4,4)
+*
+input sr
+ . 0 0 .
+ . . . .
+ . . . .
+ . . . .
+input lr
+ . 0 0 0
+ . . . .
+ . . . .
+ . . . .
+*
+* This is an SR matrix which will just-identify the shocks. This is used
+* to get initial guess values.
+*
+input sr_id
+ . 0 0 .
+ . . 0 .
+ . . . .
+ . . . .
+*
+* ShortAndLong creates the matrix <<rperp>> so that rperp x theta codes
+* the zero restrictions in the long- and short-run matrices above. rperp
+* x theta is a 16-vector which reshapes by %vectorect(rperp,theta,4)
+* into the factor matrix B, where BB' is a model for sigma. <<theta>> is
+* an 11 vector of free parameters. We need to impose at least one more
+* restriction in order to identify the model.
+*
+@shortandlong(sr=sr,lr=lr,masums=masums,noestimate,rperp=rperp) %sigma
+@shortandlong(sr=sr_id,lr=lr,masums=masums,estimate,factor=bv) %sigma
+*
+* Start with the closest solution to the just identified factor
+*
+compute [vect] theta=%ginv(rperp)*%vec(bv)
+compute [vect] theta0=theta
+*
+* Define the labels for the four shocks
+*
+compute [vect[strings]] shocklabels=||"Supply","Money Supply","Money Demand","IS"||
+*
+* The BF formula creates the "B" matrix for the factorization given the
+* current settings of theta. AF inverts that to give the "A" matrix. The
+* remaining restrictions will be on elements or linear combinations of A.
+*
+dec frml[rect] bf af
+frml bf = %vectorect(rperp*theta,4)
+frml af = inv(bf(0))
+*
+nonlin(parmset=base) theta
+*
+* Define the r6, r7 and r8 restrictions
+*
+nonlin(parmset=r6) af(0)(2,3)+af(0)(2,4)==0.0
+nonlin(parmset=r7) af(0)(2,1)==0.0
+nonlin(parmset=r8) af(0)(3,3)==0.0
+

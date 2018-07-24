@@ -1,0 +1,58 @@
+Starting Dynare (version 4.5.3).
+Starting preprocessing of the model file ...
+Found 8 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+Computing dynamic model derivatives:
+ - order 1
+ - order 2
+Processing outputs ...
+done
+Preprocessing completed.
+
+<a href = "matlab: helpview([docroot '/toolbox/optim/msg_csh/optim_msg_csh.map'],'eqn_solved','CSHelpWindow');">Equation solved</a>.
+
+fsolve completed because the vector of function values is near zero
+as measured by the default value of the <a href = "matlab: helpview([docroot '/toolbox/optim/msg_csh/optim_msg_csh.map'],'fcn_tolerance_fsolve','CSHelpWindow');">function tolerance</a>, and
+the <a href = "matlab: helpview([docroot '/toolbox/optim/msg_csh/optim_msg_csh.map'],'appears_regular','CSHelpWindow');">problem appears regular</a> as measured by the gradient.
+
+<<a href = "matlab: createExitMsg('trustnleqn',1.000000e+00,true,true,'fsolve',1.685681e-08,'default',1.000000e-06,3.772579e-17,'default',1.000000e-03,3.772579e-17,'default',1.000000e-03);">stopping criteria details</a>>
+
+
+STEADY-STATE RESULTS:
+
+Y 		 1.15972
+C 		 0.870624
+K 		 11.5638
+L 		 0.336175
+A 		 1
+R 		 0.035101
+W 		 2.24234
+I 		 0.289096
+
+<a href = "matlab: helpview([docroot '/toolbox/optim/msg_csh/optim_msg_csh.map'],'eqn_solved','CSHelpWindow');">Equation solved</a>.
+
+fsolve completed because the vector of function values is near zero
+as measured by the default value of the <a href = "matlab: helpview([docroot '/toolbox/optim/msg_csh/optim_msg_csh.map'],'fcn_tolerance_fsolve','CSHelpWindow');">function tolerance</a>, and
+the <a href = "matlab: helpview([docroot '/toolbox/optim/msg_csh/optim_msg_csh.map'],'appears_regular','CSHelpWindow');">problem appears regular</a> as measured by the gradient.
+
+<<a href = "matlab: createExitMsg('trustnleqn',1.000000e+00,true,true,'fsolve',1.685681e-08,'default',1.000000e-06,3.772579e-17,'default',1.000000e-03,3.772579e-17,'default',1.000000e-03);">stopping criteria details</a>>
+
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : Euler equation
+Equation number 2 : 0 : labor supply
+Equation number 3 : 0 : capital law of motion
+Equation number 4 : 0 : market clearing/resource constraint
+Equation number 5 : 0 : production function
+Equation number 6 : 0 : labor demand
+Equation number 7 : 0 : capital demand
+Equation number 8 : 0 : exogenous TFP process
+
+
+Total computing time : 0h00m00s

@@ -1,0 +1,250 @@
+* xirf.PGM  
+*  Program for calculating IRF's and Variance Decomps
+*  of up to 7 variable model for KPSW.
+*
+*   Last modified by MWW 6/19/89, JHS 7/9/89
+*
+*
+dis '--------------------------------------------------------------------'
+* Estimates parameters of A matrix, construct rotation
+*   estimate initial H matrix from C(1)'C(1) null right eigenvectors
+*
+*       First compute cumulative C(L), overwrite current C(L)
+*
+dim sdm(nv,nv) sdmc(nv,nv)
+do i=1,nv
+ do j=1,nv
+  ieval k=impulses+(j-1)*nv+i
+  acc k 1 nimp k 1
+  eval c1(i,j) = k(nimp)
+ end do j
+end do i
+mat sdm = c1*veps*(tr(c1))       ;* Spectral Density matrix at zero
+dis ' C(1) '
+dis ' '
+write c1; dis ' ';
+dis 'Spectral density matrix of first differences at frequency zero'; 
+dis ' ';
+write sdm; dis ' ';
+mat sdmc=sdm
+do i = 1, nv;
+ do j = 1,i;
+  eval sdmc(i,j)=sdmc(i,j)/(sqrt(sdm(i,i)*sdm(j,j)))
+end do j
+end do i
+*
+dis 'Spectral correlation matrix at frequency zero'; dis ' ';
+write sdmc; dis ' ';
+*
+mat cc = tr(c1)*c1
+eigen cc evals hinv
+mat h=inv(hinv)
+dis ' Eigenvalues of C(1)*tr(C(1)), which should have k nonzero elements '
+dis ' '
+write evals
+dis ' estimated (row) basis for A and CI vectors, from '
+dis '     eigenvectors of C(1)*tr(C(1))'
+dis ' '
+write h
+*
+****************************************************************************
+************** Start of calculation of A matrix, rotation weights **********
+****************************************************************************
+*
+mat r2=a0*inv(tr(a0)*a0)
+mat v3=tr(r2)*c1*veps*tr(c1)*r2
+dis ' Covariance matrix of permanent shocks prior to transformation '
+dis ' '
+write v3
+do i=1,nk
+ do j=1,nk ; eval r3(i,j) = v3(i,j)/sqrt(v3(i,i)*v3(j,j)) ; endo;
+endo
+dis ' Correlation matrix of permanent shocks prior to transformation '
+dis ' '
+write r3
+mat aparm=decomp(v3)
+mat v3=iden(1.0)
+do i=1,nk ;eval v3(i,i)=1/aparm(i,i) ;end do i
+mat aparm=aparm*v3
+mat ahat=a0*aparm
+dis ' Estimated PI matrix '
+dis ' '
+write aparm
+dis ' Estimated A matrix '
+dis ' '
+write ahat
+
+dim f1(nk,nv) g1(nv,nv) fstar(nv,nv)
+mat f1=tr(r2)*c1                    ;* F , k x n
+mat sdmc=iden(1.0)                  ;* n x n identity
+mat cc = sdmc - tr(f1)*(inv(f1*tr(f1)))*f1
+eigen cc evals hinv
+dis ' there should be ' ## (nv-nk) ' unit evalues and ' ## nk ' zero evalues'
+write evals
+mat g1=inv(hinv)
+mat fstar=const(0.0)
+do i=1,nk
+ do j=1,nv ; eval fstar(i,j)=f1(i,j) ; endo
+endo
+do i=(nk+1),nv
+ do j=1,nv ; eval fstar(i,j)=g1(i-nk,j) ; endo
+endo
+* r1 should be block diagonal, with (n-k)x(n-k) identity matrix SW block
+*mat r1=fstar*tr(fstar)
+mat v2 = fstar*veps*tr(fstar)
+mat h = decomp(v2)
+mat cc = iden(1.0)
+do i=1,nv; eval cc(i,i)=1/sqrt(v2(i,i)) ; endo
+* this next line matches prior version of xirf.pgm (pre 7/10/89) ...
+do i=1,nv; eval cc(i,i)=1/h(i,i) ; endo  
+* ... while this next line provides different scaling
+*do i=1,nv; eval cc(i,i)=1/sqrt(v2(i,i)) ; endo
+mat h=h*cc;
+mat hinv = inv(h)
+mat hs=hinv*fstar
+mat hsinv = inv(hs)
+
+dis ' nxn HS*epsilon cov mat, which should be diagonal: '
+dis ' '
+mat v2=hs*veps*tr(hs)
+write v2
+*
+mat r0 = decomp(v2)
+mat hsinvu=hsinv*r0    ;*  used for st. dev impulses in Errors for var dec.
+                       ;*  hsinv is used for unit shocks in impule for irf's
+dis ' weighting matrixes for IRs, decomps'
+dis '    hsinv: ' ; dis ' '
+write hsinv
+dis '    hsinvu ' ; dis ' '
+write hsinvu
+****************************************************************************
+************** end of calculation of A matrix, rotation weights **********
+****************************************************************************
+*
+* Calculate impulse response functions
+*
+list ieqn = 1 to neq
+do i=1,nv
+ impulse(noprint,decomp=hsinv) neq nimp i 
+ cards ieqn (impulses+(i-1)*nv+ieqn)*(ieqn .le. nv) 1 ieqn*(ieqn .le. nv)
+end do i
+*
+* write out impulse response functions for key variables
+env columns=132
+*
+*
+set tr 1 nimp = t
+* 'Impulse Response function       '
+open copy irfd.asc
+set tr 1 nimp = t
+Display 'Impulse Response function       '
+Display '     IRF for first differences  '
+def copy(unit=output,org=obs,format='(f5.0,7f9.3)')
+do i=1,nv
+ do j=1,nk
+  ieval k=Impulses+(j-1)*nv+i
+ end do j
+end do i
+do i=1 ,nk
+ dis 'Response to permanent shock number ' ### i
+ copy 1 nimpr tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+ copy nimp-1 nimp tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+ copy(unit=copy,for=free,org=obs) 1 nimpr tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+end do i
+close copy
+*
+*
+Display '     IRF for Levels '
+open copy irfl6u_6.asc
+do i=1,nv
+ do j=1,nv
+  ieval k=impulses+(j-1)*nv+i
+  acc k 1 nimp k 1
+ end do j
+end do i
+do i=1 ,nk
+ dis 'Response to permanent shock number ' ### i
+ copy 1 nimpr tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+ copy nimp-1 nimp tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+ copy(unit=copy,for=free,org=obs) 1 nimpr tr (impulses+(i-1)*nv+1) to $ 
+              (impulses+(i-1)*nv+nv)
+end do i
+close copy
+*
+* Calculate variance Decomp for levels at horizon nimp
+*
+declare rec vdnimpl(nv,nv)
+do i=1,nv
+ eval tempt=0.
+ do j=1,nv
+  ieval k=Impulses+(j-1)*nv+i
+  eval tempt=tempt+k(nimp)*k(nimp)*v2(j,j)
+ end do j
+ do j=1,nv
+  ieval k=Impulses+(j-1)*nv+i
+  eval vdnimpl(i,j)=100*(k(nimp)*k(nimp)*v2(j,j))/tempt
+ end do j
+end do i
+*
+* Calculate Variance Decompositions
+*
+ieval nvd=fix(ivd(nvdp))
+list ieqn = 1 to neq
+ errors(noprint,save=vdmat,decomp=hsinvu) neq nvd
+ cards ieqn
+*
+*
+* Print out table with variance decompositions at key horizons
+dim xout2(nv+1)
+def write(noskip,format='(F5.0,7F8.2)')
+
+*
+Dis 'Variance Decomps for First Differences'
+Do i = 1,nk
+ Dis 'Variance Decomp For Shock number' ## i
+ do j = 1, fix(nvdp)
+  ieval jj=fix(ivd(j))
+  eval xout2(1) = ivd(j)
+  do k9=1,nv
+   eval xout2(k9+1)=vdmat(jj,(k9-1)*nv+i)/100
+  endo k9
+  write xout2
+*  dis #### ivd(j) ###.## vdmat(jj,(0)*nv+i)/100 $
+*      ###.## vdmat(jj,(1)*nv+i)/100 ###.## vdmat(jj,(2)*nv+i)/100 $
+*      ###.## vdmat(jj,(3)*nv+i)/100 ###.## vdmat(jj,(1+4)*nv+i)/100
+ end do j
+end do i
+*
+dis ' ' ; dis ' '
+Dis 'Variance Decomps for Levels'
+Do i = 1,nk
+ dis ' '
+ Dis 'Variance Decomp For Shock number' ## i
+ do j = 1, nvdp
+  ieval jj=fix(ivd(j))
+  eval xout2(1) = ivd(j)
+  do k9=1,nv
+   eval xout2(k9+1)=vdmat(jj,(nv+k9-1)*nv+i)/100
+  endo k9
+  write xout2
+*  dis #### ivd(j) ###.## vdmat(jj,(nv)*nv+i)/100 $
+*      ###.## vdmat(jj,(nv+1)*nv+i)/100 ###.## vdmat(jj,(nv+2)*nv+i)/100 $
+*      ###.## vdmat(jj,(nv+3)*nv+i)/100 ###.## vdmat(jj,(nv+4)*nv+i)/100
+ end do j
+ eval aa=120
+  eval xout2(1) = aa
+  do k9=1,nv
+   eval xout2(k9+1)=vdnimpl(k9,i)/100
+  endo k9
+  write xout2
+*  dis #### aa ###.## vdnimpl(1,i)/100 ###.## vdnimpl(2,i)/100 $
+*     ###.## vdnimpl(3,i)/100 ###.## vdnimpl(4,i)/100 ###.## $
+*     vdnimpl(5,i)/100
+end do i
+*
+

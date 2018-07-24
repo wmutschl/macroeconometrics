@@ -1,0 +1,127 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = en_US
+
+\documentclass[]{scrartcl}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage{lmodern}
+\usepackage{csquotes}
+\usepackage[english]{babel}
+%\usepackage[a4paper,bottom=1.5in,top=1.5in]{geometry}
+
+%opening
+\title{Macroeconometrics}
+\author{Willi Mutschler}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction and Motivation}
+\subsection{Macroeconometrics}
+\begin{itemize}
+	\item Macroeconometrics encompasses large variety of probability models for macroeconomic time series as well as estimation and inference procedures (frequentist and Bayesian)
+	\item Goal: study the determinants of economic growth, to examine the sources of business cycle fluctuations to understand the propagation of shocks, generate forecasts, and to predict the effects of economic policy changes. 
+	\item term ‘macroeconometrics’ is often narrowly associated with large-scale system-of-equations models in the Cowles Commission tradition that were developed from the 1950s to the 1970s. 
+	\item models came under attack in mid 1970s: 
+	\begin{itemize}
+		\item Lucas (1976) argued that the models are unreliable tools for policy analysis because they are unable to predict the effects of policy regime changes on the expectation formation of economic agents in a coherent manner. 
+		\item Sims (1980) criticized that many of the restrictions that are used to identify behavioral equations in these models are inconsistent with dynamic macroeconomic 	theories and proposed the use of vector autoregressions (VAR) as an alternative
+	\end{itemize}
+	\item modern view of macroeconometrics that is closely tied to modern dynamic macroeconomic theory
+	\item focus on challenges that arise in the econometric analysis of dynamic stochastic general equilibrium (DSGE) models and vector autoregressions (VAR). 
+\end{itemize}
+
+\subsection{VAR and SVAR models}
+\begin{itemize}
+	\item The vector autoregressive (VAR) model is a widely used model for multivariate time series analysis. 
+	\item consists of a system of regression equations.
+	\item VAR models are estimated by regressing each model variable on lags of its own as well aslags of the other model variables up to some pre-specified maximum lag order
+	\item Similar to dynamic simultaneous equations modelssuch a model is known as a reduced form, defined as a model that expresses thecurrent values of the data as a linear function only of its own lagged values and lagged values of the other model variables. 
+	\item This modelhas proved useful for summarizing the properties of the data, for forecasting,for testing for the existence of equilibrium relationships tying together two ormore economic variables, and for quantifying the speed with which the modelvariables revert back to the equilibrium following a disturbance.
+	\item Structural analysis requires premise that reduced-form VAR model as
+	representing data generated from the structural VAR model
+	\item  structural vector autoregressions haveevolved into one of the most widely used models in empirical research using timeseries data. They are used in macroeconomics and in empirical finance, but also
+	in many other fields including agricultural economics and energy economics.
+	\item Structural in the sense that shocks are postulated to be mutually
+	uncorrelated with each element of reduced-form errors, i.e. having a distinct economic interpretation
+	\item Thus we can interpret movements in the data caused by any one
+	element of the structural shock as being caused by that shock. 
+	\item Structural shocks in generalare not directly observable, but under suitable conditions may be recovered fromthe reduced-form representation
+	\item The problem of finding suitable economically crediblerestrictions is known as the identification problem in structuralVAR analysis. 
+	\item We will cover alternative strategies forachieving identification. 
+	\item The existence of a structural VAR model allows us to quantify causal relationships in the data that are obscuredin reduced-form VAR analysis. 
+	\item Example: Suppose that the structural shock of interest involves changes in
+	monetary policy not in response to macroeconomic conditions. After expressing
+	the estimate of the VAR model in a suitable form, one may answer a range of
+	questions about the causal effects of this shock: 
+	\begin{itemize}
+		\item How much will an unexpected monetary policy tightening inthe current quarter reduce output growth over the next two years,when that policy change occurs all else equal and is not followed by anyfurther monetary policy shocks after the current quarter. The response ofoutput growth to this shock over time can be quantified in the form of animpulse response function.
+		\item How much of the variability of output growth on averageis accounted for by shocks to monetary policy as opposed to other structural shocks. This question can be answered by a forecast error variancedecomposition.
+		\item How much of the recession of 1982, for example, is explainedby the cumulative effects of earlier monetary policy shocks. This questioncan be answered by constructing a historical decomposition.
+		\item How much the recession of 1982 would have deepened, had monetary policy makers not responded to output growth at all. This question, under suitable conditions, may be answered by a policycounter-factual.
+	\end{itemize}
+	\item Chief advantage of the structural VAR model: tends to fit the data
+	well and only involves minimal identifying restrictions (no cross-equation restrictions or exclusion restrictions on the reduced form)
+\end{itemize}
+
+\subsection{DSGE models}
+\begin{itemize}
+	\item broad class of dynamic macroeconomic models that spans the standard neoclassical growth model discussed in King, Plosser, and Rebelo (1988) as well as the monetary model with numerous real and nominal frictions developed by Christiano, Eichenbaum, and Evans (2005)
+	\item common feature: decision rules of economic agents are derived from assumptions about preferences and technologies by solving intertemporal optimization problems
+	\item agents potentially face uncertainty with respect to, for instance, total factor productivity or the nominal interest rate set by a central bank.
+	\item uncertainty is generated by exogenous stochastic processes or shocks that shift technology or generate unanticipated deviations from a central bank’s interest-rate feedback rule. 
+	\item Conditional on distributional assumptions for the exogenous shocks, the DSGE model generates a joint probability distribution for the endogenous model variables such as output, consumption, investment, and inflation.
+\end{itemize}
+
+\section{What are goals?}
+\begin{itemize}
+	\item Business cycle analysts are interested in identifying sources of fluctuations: how important are monetary piolicy shocks for movements in aggregate output? 
+	\item understand the propagation of	shocks, e.g., what happens to aggregate hours worked in response to a technology shock? 
+	\item questions about structural changes in the economy: 
+	\begin{itemize}
+		\item has monetary policy changed in the early 1980s? 
+		\item Why did the volatility of many macroeconomic time series drop in the mid 1980s? 
+	\end{itemize}
+	\item forecasting the future: 
+	\begin{itemize}
+		\item how will inflation and output growth rates evolve over the next eight quarters? 
+	\end{itemize}
+	\item predict the effect of policy changes: 
+	\begin{itemize}
+		\item how will output and inflation respond to an unanticipated change in the nominal interest rate? 
+		\item Is it desirable to adopt an inflation targeting regime?
+	\end{itemize}
+
+\section{What are the challenges?}
+\begin{itemize}
+	\item Principle: specify a DSGE model that is sufficiently rich to address the substantive economic question of interest; derive its likelihood
+	function and fit the model to historical data; answer the questions based on the estimated DSGE model. 
+	\item easier said than done
+	\item trade-off: between theoretical coherence and empirical fit
+	\item Misspecification: calibration as in Kydland and Prescott (1996) vs recent	Bayesian and non-Bayesian formal econometric tools
+	\item Presence of misspecification might suggest: ignore the cross-coefficient restrictions implied by dynamic economic theories in the empirical
+	work and try to answer the questions posed above directly by VARs. 
+	\item Unfortunately, there is no free lunch
+	\item VARs have many free parameters and without restrictions on their coefficients can lead to poor forecasts. 
+	\item VARs do not provide a tight economic interpretation of economic dynamics in terms of the behavior of rational, optimizing	agents. 
+	\item Difficult to predict the effects of rare policy regime changes on the expectation formation and the behavior of economic agents since these are not explicitly modelled
+	\item DSGE vs SVARs: trade-off between theoretical coherence and empirical fit remains.
+	\item Challenge: identification. The parameters of a model are identifiable if no two parameterizations of that model generate the same probability distribution for the observables. 
+	\item In VARs the mapping between the one-step-ahead forecast errors of the endogenous variables and the underlying structural shocks is not unique, and additional restrictions are necessary to identify, say, a monetary policy or a technology shock.
+	\item DSGE models can be locally approximated by linear rational expectations (LRE) models. While tightly parameterized compared to VARs, LRE models can generate delicate identification problems.
+	\item in many cases difficult to detect identification problems in DSGE models, since the mapping from the structural parameters into the autoregressive law of motion for the observables is highly nonlinear and typically can only be evaluated numerically.
+	\item Many regularities of macroeconomic time series are indicative of nonlinearities (rise and fall of inflation in the 1970s and early 1980s, time-varying volatility of many macroeconomic time series)
+	\item In VARs nonlinear dynamics are typically generated with time-varying coefficients, whereas most DSGE models are nonlinear and only for convenience approximated by linear
+	rational expectations models. Conceptually the analysis of nonlinear models is very	similar to the analysis of linear models, but the implementation of the computationsis often more cumbersome and poses a third challenge.	
+	\item VARs typically have many more parameters than DSGE models and the role of	prior distributions is mainly to reduce the effective dimensionality of this parameter space to avoid over-fitting. 
+	\item More interestingly, if one interprets the DSGE model as a set of restrictions on the VAR then the DSGE model induces a degenerate prior for the VAR coefficients.
+\end{itemize}
+
+\end{itemize}
+\end{document}

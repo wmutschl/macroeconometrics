@@ -1,0 +1,51 @@
+ RATS Version 3.03. 10/20/89
+ Copyright (c) 1986-89 by VAR Econometrics
+ Portions (c) 1988 by Doan Associates
+ * Program to rewrite ascii files for structural disturbances
+ * into RATS file, MWW 9/19/90
+ *
+ cal 1954 1 4
+ all 0 88:4
+ open data prms6u_6.asc
+ data(for=free,org=obs) / y6s1 y6s2 y6s3
+ close data
+ open data \kpsw\data\kpsw1.dat
+ data(for=rats,compact=average) / gnp82 gge82 p16
+     GNP82   
+ CITIBASE SERIES: GNP82                                                         
+ GROSS NATIONAL PRODUCT (BIL 1982$)                                             
+     GGE82   
+ CITIBASE SERIES: GGE82                                                         
+ GOVERMENT PURCHASES OF GOODS AND SERVICES, TOTAL (1982$)                       
+     P16     
+ CITIBASE SERIES: P16                                                           
+ POPULATION: TOTAL CIVILIAN NONINSTITUTIONAL , AGE 16 +(THOUS.,NSA)             
+ close data
+ *
+ set y / = log(gnp82(t)-gge82(t))-log(p16(t))
+ set dy  54:2 88:4 = y(t)-y(t-1)
+ stats dy 54:2 88:4
+ STATISTICS ON SERIES     DY      (   8)
+ OBSERVATIONS           139               MISSING OBS.             0
+ FROM    1954: 2 UNTIL    1988: 4
+
+ SAMPLE MEAN             .4496092E-02     VARIANCE                .1648062E-03
+ STANDARD DEVIATION      .1283769E-01     STAN. DEV. OF MEAN      .1088878E-02
+ T-STAT FOR MEAN=0       4.129104         SIGNIFICANCE LEVEL      .3641802E-04
+
+
+
+ eval dym = mean
+ *
+ * Add mean of dy into first residuals
+ *
+ set y6s1 / = y6s1(t)+dym
+ acc y6s1 / y6s1a
+ dedit(new) ct6.dat
+ include y6s1 y6s1 /
+ include y6s1a y6s1a /
+ include y6s2 y6s2 /
+ include y6s3 y6s3 /
+ save
+ ******** END OF FILE ENCOUNTERED ********
+ ********  EXECUTION TERMINATES   ********

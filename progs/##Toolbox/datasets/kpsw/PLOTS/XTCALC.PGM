@@ -1,0 +1,44 @@
+* Program xtcalc, mww 6/19/89
+*
+*  This program forms the linear combination of the VAR residuals
+*   that corresponds to the permanent shocks
+*
+*   Xwat is a matrix calculated in irf5i.pgm that has the weights
+*   for the linear combinations of the shocks
+*
+*    The VAR residuals are stored in numbered series ieps1 to ieps2
+*
+do i = 1, nk
+ zero (istr1+i-1)
+ do j = 1,nv
+  set (istr1+i-1) n1 n2 = (istr1+i-1)(t)+hs(i,j)*(ieps1+j-1)(t)
+ end do j
+end do i
+*
+* write shocks to disk
+*
+open copy prms6u_6.asc 
+copy(unit=copy,org=obs,for=free) n1 n2  (istr1) to (istr1+nk-1)
+close copy
+************************************************************
+*   save relevant series in RATS data file, in addition to previous 
+*      ASCII files
+************************************************************
+*dedit(new) perms.rat
+*
+*do i=1,nk
+* do j=1,nv
+*  ieval k=impulses+(i-1)*nv+j
+*  dis k 
+*  include k 
+**  Impulse response, levels
+* endo j
+*endo i
+*
+*do i=istr1,(istr1+nk-1)
+* include i 
+* dis i 
+** Permanent component
+*endo
+*save
+

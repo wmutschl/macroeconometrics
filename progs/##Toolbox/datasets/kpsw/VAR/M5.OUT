@@ -1,0 +1,1061 @@
+ RATS Version 2.13. 07/15/88 
+ Copyright (c) 1988,1987,1986 by VAR Econometrics
+ Portions (c) 1988 by Doan Associates
+ * XVAR6UVD.RTS, acb 8/8/89
+ *
+ * XVAR6u.RTS, MWW 6/16/89
+ *  Rats program to estimate the six variable model
+ *
+ *  In this program the money demand disturbance is I(0), so that the
+ *   cointegrating relation from the money demand equation is enforced.
+ *
+ * Program is slightly modified version of above MWW Program
+ * Calculation of standard errors on VDs only
+ * See Rats manual section on Monte Carlo Integration
+ *
+ bma com 3500 mat 100 glo 250
+ *************
+ * Set up VECM
+ *
+ *  (i)    Model definition parameters
+ *
+ ieval nv=5 ;ieval nk=2
+ ieval nciv=nv-nk;
+ ieval nlags=8 ;ieval nimp=120
+ ieval nac=27
+ ieval neq=2*nv+nciv
+ ieval mxvr=nv*nlags+4
+ seed 123
+ sou a:\kpsw\var\kpsw1.inp
+ * kpsw1.inp, from Stock, modified by mww 4/20/89
+ *
+ * inputs, transforms data for KPSW1 analysis, using citibase data
+ cal 47 1 4
+ all nac 88:4 neq mxvr
+ ieval nfirst = (47:1)
+ ieval nlast  = (88:4)
+ ***
+ sou a:\kpsw\var\ctinit.pgm
+ * CTINIT.PGM                        JHS  3/6/87
+ *
+ * Declares work arrays for subsequent CT programs ;must be run before
+ *    any executable commands
+ *
+ dec rect h hinv hs hsinv hsinvu c1 r0 r1 r2 r3 f1 g1 fstar
+ dec rect sel a0 as aparm ahat alpha qk rsq1
+ dec sym cc v2 v3 sdm sdmc
+ dec vec sigeta ivd xout kp9
+ *
+ dec rect h2 hinv2 hs2 hsinv2 c2 r02 r12 r22 r32
+ dec rect sel2 a2 as2 aparm2 ahat2 alpha2 qk2 rsq12
+ dec sym cc2 v22 v32 sdm2 sdmc2
+ dec vec sigeta2 ivd2 xout2 kp92
+ ***
+ open data a:\kpsw\data\kpsw1.dat
+ data(for=rats,compact=average) / gnp82 gc82 gif82 gge82 p16 gnp gge
+     GNP82   
+ CITIBASE SERIES: GNP82                                                         
+ GROSS NATIONAL PRODUCT (BIL 1982$)                                             
+     GC82    
+ CITIBASE SERIES: GC82                                                          
+ PERSONAL CONSUMPTION EXPENDITURES (BIL 1982$)                                  
+     GIF82   
+ CITIBASE SERIES: GIF82                                                         
+ GROSS PRIV DOMESTIC INVESTMENT, FIXED (BIL 1982$)                              
+     GGE82   
+ CITIBASE SERIES: GGE82                                                         
+ GOVERMENT PURCHASES OF GOODS AND SERVICES, TOTAL (1982$)                       
+     P16     
+ CITIBASE SERIES: P16                                                           
+ POPULATION: TOTAL CIVILIAN NONINSTITUTIONAL , AGE 16 +(THOUS.,NSA)             
+     GNP     
+ CITIBASE SERIES: GNP                                                           
+ GROSS NATIONAL PRODUCT, TOTAL                                                  
+     GGE     
+ CITIBASE SERIES: GGE                                                           
+ GOVERMENT PURCHASES OF GOODS AND SERVICES, TOTAL                               
+ close data
+ *
+ set y     / = log(gnp82(t)-gge82(t))-log(p16(t))
+ set c     / = log(gc82(t))-log(p16(t))
+ set in     / = log(gif82(t))-log(p16(t))
+ **********
+ set dy  nfirst+1 nlast = y(t)-y(t-1)
+ set dc  nfirst+1 nlast = c(t)-c(t-1)
+ set din nfirst+1 nlast = in(t)-in(t-1)
+ *
+ * Money and Price -- 5 variable model
+ *
+ ieval nfirst = (47:1)
+ ieval nlast  = (88:4)
+ open data a:\kpsw\data\kpsw1.dat
+ data(for=rats,compact=average) nfirst nlast m2 fygm3 fyaaac fycp
+     M2      
+ CONSTRUCTED M2 SERIES (CITIBASE, FM2 FROM 59:1-88:12)                          
+ MONEY STOCK: M2                                                                
+     FYGM3   
+ CITIBASE SERIES: FYGM3                                                         
+ INTEREST RATE: U.S.TREASURY BILLS,SEC MKT,3-MO.(% PER ANN,NSA)                 
+     FYAAAC  
+ CITIBASE SERIES: FYAAAC   12              47:01         88:12                  
+     BOND YIELD: MOODY'S AAA CORPORATE (% PER ANNUM)                            
+     FYCP    
+ CITIBASE SERIES: FYCP     12              47:01         88:12                  
+     INTEREST RATE: COMMERCIAL PAPER, 6-MONTH (% PER ANNUM,NSA)                 
+ close data
+ *
+ set p nfirst nlast =  log( (gnp(t)-gge(t))/(gnp82(t)-gge82(t)) )
+ set m nfirst nlast =  log(m2(t)) - log(p16(t))
+ set mp nfirst nlast = m(t)-p(t)
+ set vel nfirst nlast = m(t)-p(t)-y(t)
+ set rgs nfirst nlast = fygm3(t)/400.0
+ set rps nfirst nlast = fycp(t)/400.0
+ set rpl nfirst nlast = fyaaac(t)/400.0
+ **********
+ zer dp; zer dm
+ set dp  nfirst+1 nlast = p(t)-p(t-1)
+ set dm  nfirst+1 nlast = m(t)-m(t-1)
+ set dp1 nfirst   nlast-1 = p(t+1)-p(t)
+  set dp1 nlast nlast = 0.0
+ env err=1 war=1
+ ieval n1=(54:1) ;ieval n2=(88:4)
+ ieval nest1=n1 ; ieval nest2=n2
+ ieval nimpr = 32   ;* number of impulses to report
+ *eval ep = -3.914 ; eval ey = 1.100; * Money demand elasticity (dp), 54:1-88:4
+ eval ep = -.01343*400 ;eval ey = 1.197; * Money demand elast(fygm3), 54:1-88:4
+ *eval ep = -4.717 ; eval ey = 1.183; * Money dem elast(fygm3), orig, 54:1-88:4
+ *eval ep = -4.979 ; eval ey = 1.199; * Money demand elast (fycp), 54:1-88:4
+ *eval ep = -4.736 ; eval ey = 1.218; * Money demand elast (fyaaac), 54:1-88:4
+ *eval phi1=1.973 ; eval phi2=-1.008; * Johansen MLE's, 54:1 - 88:4
+ eval phi1=0.00334*400;eval phi2 = -0.0028*400; * Stock-Watson MLE's, 54:1-88:4
+ *eval phi1=1.16;eval phi2 = -0.55; * Stock-Watson MLE's, 54:1-88:4, original
+ *eval ep = -4.803  ;eval ey = 1.210; *  Money demand elast (fycp), 53:1-88:4
+ *
+ *  (ii)   Basic variables in model, in first differences
+ *
+ ieval k=0
+  99531 dofor yy=y c in mp rgs
+  99557  ieval k=k+1
+  99567  set k / = yy(t)
+  99586 end dofor
+ *
+ *  (iii)  Cointegrating vectors (either theoretical or empirical), to be
+ *         entered as columns of alpha
+ *
+ dim alpha(nv,nv-nk) a0(nv,nk)
+ read(unit=input) alpha
+ -1 -1 -8
+  1  0  0
+  0  1  0
+  0  0  1
+  0  0 -9
+ eval alpha(1,3)=-ey
+ eval alpha(5,3)=-ep
+ *eval alpha(5,1)=-phi1 ; eval alpha(6,1)=phi1
+ *eval alpha(5,2)=-phi2 ; eval alpha(6,2)=phi2
+ *
+ * Desired form for "A" (factor loading) matrix -- must:
+ *   (i)  be of form AHAT=A0*P, where P is kxk lower triangular with
+ *        ones on the diagonal
+ *   (ii) have tr(ALPHA)*A0=0, i.e. be orthogonal to cointegrating vectors
+ *
+ read(unit=input) a0
+  1   0
+  1   0
+  1   0
+  8   9
+  0   1
+ *
+ eval a0(4,1)=ey
+ eval a0(4,2)=ep
+ *eval a0(2,3)=phi1 ; eval a0(3,3)=phi2
+ *eval a0(4,3)=ep
+ *
+ declare rect xmark(nciv,nk)
+ mat xmark=(tr(alpha))*a0
+ write xmark
+   .0000000       .0000000    
+   .0000000       .0000000    
+   .0000000       .0000000    
+
+
+
+ *
+ *--------------------------------------------------*
+ * Estimate model, A, Impulse responses, Variance Decomps
+ *
+ output noecho
+ Number of Series Needed  
+       23
+
+
+
+ Number of Series allocated  
+       27
+
+
+
+  Check that data series have been properly constructed:  
+   
+                   y runs from       1 to       5 
+             delta y runs from       6 to      10 
+                   z runs from      11 to      13 
+
+
+  ENTRY        y         1     c         2     i         3     x4        4
+      51: 4    -4.66240        -4.93616        -6.25898        -4.87589    
+      52: 1    -4.66059        -4.93409        -6.24721        -4.86696    
+      52: 2    -4.67596        -4.91786        -6.23926        -4.85704    
+      52: 3    -4.67589        -4.91508        -6.29918        -4.85938    
+      52: 4    -4.65217        -4.89636        -6.24100        -4.86420    
+      53: 1    -4.65045        -4.89315        -6.21201        -4.86626    
+      53: 2    -4.64754        -4.89047        -6.21185        -4.86290    
+      53: 3    -4.65649        -4.89341        -6.21591        -4.86376    
+      53: 4    -4.67443        -4.89655        -6.22398        -4.85411    
+      54: 1    -4.67163        -4.89530        -6.23973        -4.85566    
+      54: 2    -4.66181        -4.88920        -6.22508        -4.85171    
+      54: 3    -4.64164        -4.87582        -6.19673        -4.83609    
+
+
+  ENTRY        mp        5     dy        6     dc        7     di        8
+      51: 4     .402500E-02    -.146066E-01     .405016E-02    -.841553E-02
+      52: 1     .391667E-02     .181419E-02     .207196E-02     .117774E-01
+      52: 2     .411667E-02    -.153735E-01     .162337E-01     .795015E-02
+      52: 3     .445833E-02     .709539E-04     .277625E-02    -.599226E-01
+      52: 4     .473333E-02     .237226E-01     .187273E-01     .581817E-01
+      53: 1     .495000E-02     .172280E-02     .320332E-02     .289926E-01
+      53: 2     .538333E-02     .290881E-02     .268560E-02     .156047E-03
+      53: 3     .489167E-02    -.895226E-02    -.294263E-02    -.406322E-02
+      53: 4     .368333E-02    -.179368E-01    -.313957E-02    -.807242E-02
+      54: 1     .265000E-02     .279415E-02     .125259E-02    -.157484E-01
+      54: 2     .196667E-02     .982090E-02     .610110E-02     .146525E-01
+      54: 3     .220833E-02     .201747E-01     .133795E-01     .283551E-01
+
+
+  ENTRY        dx4       9     dmp      10     z1       11     z2       12
+      51: 4     .578204E-02     .166667E-04    -.273761        -1.59658    
+      52: 1     .893427E-02    -.108333E-03    -.273504        -1.58662    
+      52: 2     .992262E-02     .200000E-03    -.241896        -1.56329    
+      52: 3    -.233757E-02     .341667E-03    -.239191        -1.62329    
+      52: 4    -.481971E-02     .275000E-03    -.244186        -1.58883    
+      53: 1    -.206070E-02     .216667E-03    -.242706        -1.56156    
+      53: 2     .335507E-02     .433333E-03    -.242929        -1.56431    
+      53: 3    -.858669E-03    -.491667E-03    -.236919        -1.55942    
+      53: 4     .965147E-02    -.120833E-02    -.222122        -1.54956    
+      54: 1    -.155702E-02    -.103333E-02    -.223664        -1.56810    
+      54: 2     .395399E-02    -.683333E-03    -.227384        -1.56327    
+      54: 3     .156167E-01     .241667E-03    -.234179        -1.55509    
+
+
+  ENTRY        z3       13
+      51: 4     .726625    
+      52: 1     .732805    
+      52: 2     .762204    
+      52: 3     .761617    
+      52: 4     .729879    
+      53: 1     .726920    
+      53: 2     .729121    
+      53: 3     .736337    
+      53: 4     .760968    
+      54: 1     .750515    
+      54: 2     .739043    
+      54: 3     .731808    
+
+
+
+ Series     dy       (    6 )
+ Series     y        (    1 )   LAGS    1 TO    1
+ Series     dc       (    7 )
+ Series     c        (    2 )   LAGS    1 TO    1
+ Series     di       (    8 )
+ Series     i        (    3 )   LAGS    1 TO    1
+ Series     dx4      (    9 )
+ Series     x4       (    4 )   LAGS    1 TO    1
+ Series     dmp      (   10 )
+ Series     mp       (    5 )   LAGS    1 TO    1
+ Series     y        (    1 )
+ Series     c        (    2 )
+ Series     i        (    3 )
+ Series     x4       (    4 )
+ Series     mp       (    5 )
+ Series     y        (    1 )
+ Series     c        (    2 )
+ Series     i        (    3 )
+ Series     x4       (    4 )
+ Series     mp       (    5 )
+ Series     y        (    1 )
+ Series     c        (    2 )
+ Series     i        (    3 )
+ Series     x4       (    4 )
+ Series     mp       (    5 )
+
+
+
+ EQUATION    1
+ DEPENDENT VARIABLE    6     dy      
+ FROM      54: 1 UNTIL      88: 4
+ TOTAL OBSERVATIONS    140     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   140     DEGREES OF FREEDOM     96
+ R**2            .48343309     RBAR**2         .25205416
+ SSR         .11749899E-01     SEE         .11063218E-01
+ DURBIN-WATSON  1.92653435
+ Q(  33)=   21.7449       SIGNIFICANCE LEVEL  .933135    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     dy         6   1   .8385201E-01   .1604515       .5226003    
+   2     dy         6   2   .2699482E-02   .1645503       .1640521E-01
+   3     dy         6   3   .3614797E-01   .1662197       .2174711    
+   4     dy         6   4  -.8490136E-01   .1701837      -.4988806    
+   5     dy         6   5  -.1838350       .1718297      -1.069868    
+   6     dy         6   6   .1277062E-01   .1630118       .7834170E-01
+   7     dy         6   7  -.3044525E-01   .1508677      -.2018009    
+   8     dy         6   8   .1131267       .1444744       .7830226    
+   9     dc         7   1  -.2557469E-01   .2041068      -.1253005    
+  10     dc         7   2   .1436273       .2066736       .6949476    
+  11     dc         7   3  -.1521844       .2080178      -.7315932    
+  12     dc         7   4   .1056712       .2071990       .5099986    
+  13     dc         7   5  -.1043019       .2120131      -.4919597    
+  14     dc         7   6   .6785975E-01   .2041055       .3324739    
+  15     dc         7   7   .1206883       .1937021       .6230614    
+  16     dc         7   8  -.4353021       .1914984      -2.273137    
+  17     di         8   1   .8416788E-01   .7408674E-01   1.136072    
+  18     di         8   2   .9101287E-02   .7355050E-01   .1237420    
+  19     di         8   3  -.7641675E-01   .7320753E-01  -1.043837    
+  20     di         8   4   .3060451E-01   .7380314E-01   .4146776    
+  21     di         8   5   .3763264E-01   .7066159E-01   .5325757    
+  22     di         8   6   .4978025E-01   .7048979E-01   .7062051    
+  23     di         8   7   .2602791E-01   .7002336E-01   .3717032    
+  24     di         8   8  -.6559341E-01   .6363165E-01  -1.030830    
+  25     dx4        9   1   .1312522       .1731170       .7581707    
+  26     dx4        9   2   .1494342       .1848402       .8084504    
+  27     dx4        9   3  -.1795355       .1848209      -.9714022    
+  28     dx4        9   4  -.5599702E-01   .1823042      -.3071625    
+  29     dx4        9   5   .1415356       .1780144       .7950798    
+  30     dx4        9   6  -.3855829E-02   .1844039      -.2090970E-01
+  31     dx4        9   7  -.1402337       .1828948      -.7667453    
+  32     dx4        9   8   .2231770       .1627905       1.370946    
+  33     dmp       10   1   .3731626       .6587132       .5665024    
+  34     dmp       10   2  -.8933316       .7968952      -1.121015    
+  35     dmp       10   3   .8693185       .8657198       1.004157    
+  36     dmp       10   4  -1.276772       .9047738      -1.411151    
+  37     dmp       10   5  -.4656560       .9338851      -.4986224    
+  38     dmp       10   6  -1.026373       .9477327      -1.082977    
+  39     dmp       10   7  -.5435619       .8456364      -.6427844    
+  40     dmp       10   8  -.4409708       .8341527      -.5286451    
+  41     CONSTANT   0   0  -.2569232E-01   .8130252E-01  -.3160089    
+  42     z1        11   1   .2399470E-01   .9498040E-01   .2526279    
+  43     z2        12   1   .1698775E-01   .4330336E-01   .3922964    
+  44     z3        13   1   .9586721E-01   .5001361E-01   1.916822    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     dy      
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     dy                .36217        .9378991    
+     dc                .91116        .5107454    
+     di                .79209        .6108262    
+     dx4               .58398        .7888443    
+     dmp               .65497        .7295541    
+
+
+
+
+
+
+ EQUATION    2
+ DEPENDENT VARIABLE    7     dc      
+ FROM      54: 1 UNTIL      88: 4
+ TOTAL OBSERVATIONS    140     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   140     DEGREES OF FREEDOM     96
+ R**2            .48315721     RBAR**2         .25165470
+ SSR         .37823865E-02     SEE         .62769308E-02
+ DURBIN-WATSON  1.92776478
+ Q(  33)=   25.0964       SIGNIFICANCE LEVEL  .836373    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     dy         6   1   .1024963       .9103528E-01   1.125896    
+   2     dy         6   2   .4231032E-01   .9336078E-01   .4531916    
+   3     dy         6   3  -.4354997E-01   .9430796E-01  -.4617847    
+   4     dy         6   4  -.1503908       .9655703E-01  -1.557533    
+   5     dy         6   5  -.1606372       .9749088E-01  -1.647715    
+   6     dy         6   6  -.5682163E-01   .9248791E-01  -.6143682    
+   7     dy         6   7  -.8514450E-01   .8559774E-01  -.9947051    
+   8     dy         6   8  -.5885231E-02   .8197034E-01  -.7179708E-01
+   9     dc         7   1  -.7144328E-01   .1158040      -.6169330    
+  10     dc         7   2   .1599172E-02   .1172603       .1363780E-01
+  11     dc         7   3   .4307916E-01   .1180229       .3650068    
+  12     dc         7   4   .8862123E-01   .1175584       .7538488    
+  13     dc         7   5  -.5929746E-01   .1202897      -.4929553    
+  14     dc         7   6   .7864699E-01   .1158032       .6791436    
+  15     dc         7   7   .1629082       .1099006       1.482323    
+  16     dc         7   8  -.1377632       .1086503      -1.267950    
+  17     di         8   1  -.3351555E-01   .4203455E-01  -.7973333    
+  18     di         8   2   .2757620E-01   .4173030E-01   .6608195    
+  19     di         8   3   .2950839E-01   .4153571E-01   .7104343    
+  20     di         8   4   .5854709E-01   .4187364E-01   1.398185    
+  21     di         8   5   .4124652E-01   .4009122E-01   1.028817    
+  22     di         8   6   .2923249E-01   .3999375E-01   .7309266    
+  23     di         8   7  -.9479141E-02   .3972911E-01  -.2385943    
+  24     di         8   8  -.3735587E-01   .3610265E-01  -1.034713    
+  25     dx4        9   1   .8320690E-01   .9822129E-01   .8471371    
+  26     dx4        9   2  -.2256898E-01   .1048727      -.2152036    
+  27     dx4        9   3  -.5993267E-01   .1048617      -.5715400    
+  28     dx4        9   4  -.5644933E-01   .1034338      -.5457532    
+  29     dx4        9   5   .1175499       .1009999       1.163861    
+  30     dx4        9   6  -.1943105E-01   .1046251      -.1857207    
+  31     dx4        9   7  -.5068887E-01   .1037689      -.4884785    
+  32     dx4        9   8   .1984016       .9236234E-01   2.148079    
+  33     dmp       10   1  -.9940112       .3737337      -2.659678    
+  34     dmp       10   2  -.9468502       .4521339      -2.094181    
+  35     dmp       10   3  -1.286850       .4911829      -2.619901    
+  36     dmp       10   4  -.6961862       .5133409      -1.356187    
+  37     dmp       10   5  -1.011891       .5298578      -1.909741    
+  38     dmp       10   6   .1869877       .5377145       .3477454    
+  39     dmp       10   7  -.5505838       .4797882      -1.147556    
+  40     dmp       10   8   .3988400       .4732727       .8427277    
+  41     CONSTANT   0   0  -.3535754E-01   .4612856E-01  -.7665000    
+  42     z1        11   1  -.1209310       .5388897E-01  -2.244076    
+  43     z2        12   1   .1270981E-02   .2456900E-01   .5173110E-01
+  44     z3        13   1   .2157470E-01   .2837619E-01   .7603098    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     dc      
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     dy                .94006        .4875576    
+     dc                .86576        .5481473    
+     di                .69724        .6931484    
+     dx4               .84779        .5632464    
+     dmp              2.56600        .1397506E-01
+
+
+
+
+
+
+ EQUATION    3
+ DEPENDENT VARIABLE    8     di      
+ FROM      54: 1 UNTIL      88: 4
+ TOTAL OBSERVATIONS    140     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   140     DEGREES OF FREEDOM     96
+ R**2            .62342401     RBAR**2         .45474935
+ SSR         .36985245E-01     SEE         .19628117E-01
+ DURBIN-WATSON  1.88147409
+ Q(  33)=   25.2585       SIGNIFICANCE LEVEL  .830403    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     dy         6   1   .5764777       .2846696       2.025077    
+   2     dy         6   2   .4223956       .2919415       1.446850    
+   3     dy         6   3   .3869630       .2949033       1.312169    
+   4     dy         6   4  -.1806012       .3019362      -.5981435    
+   5     dy         6   5  -.3221101       .3048564      -1.056596    
+   6     dy         6   6  -.2815808       .2892120      -.9736138    
+   7     dy         6   7  -.2083311       .2676662      -.7783241    
+   8     dy         6   8  -.2030302       .2563233      -.7920865    
+   9     dc         7   1  -.3217064       .3621218      -.8883926    
+  10     dc         7   2  -.3234308       .3666757      -.8820623    
+  11     dc         7   3  -.3813297       .3690605      -1.033244    
+  12     dc         7   4   .1609497       .3676079       .4378297    
+  13     dc         7   5  -.1114163       .3761489      -.2962026    
+  14     dc         7   6   .4671917       .3621194       1.290159    
+  15     dc         7   7   .2744530       .3436619       .7986135    
+  16     dc         7   8  -.1318104       .3397522      -.3879603    
+  17     di         8   1   .1440062       .1314431       1.095578    
+  18     di         8   2  -.1410855       .1304917      -1.081184    
+  19     di         8   3  -.6607935E-01   .1298832      -.5087598    
+  20     di         8   4   .5464151E-01   .1309399       .4173022    
+  21     di         8   5   .1941927       .1253662       1.549004    
+  22     di         8   6   .2519015       .1250614       2.014222    
+  23     di         8   7   .8930874E-01   .1242339       .7188757    
+  24     di         8   8  -.8923522E-01   .1128939      -.7904346    
+  25     dx4        9   1   .5135151       .3071404       1.671923    
+  26     dx4        9   2   .6275847       .3279395       1.913721    
+  27     dx4        9   3  -.4307606       .3279052      -1.313674    
+  28     dx4        9   4  -.3671801       .3234401      -1.135234    
+  29     dx4        9   5   .9756098E-01   .3158292       .3089043    
+  30     dx4        9   6   .2206654E-01   .3271653       .6744768E-01
+  31     dx4        9   7  -.1628391       .3244879      -.5018342    
+  32     dx4        9   8   .2750248       .2888193       .9522383    
+  33     dmp       10   1   .4532961       1.168674       .3878721    
+  34     dmp       10   2  -2.145333       1.413834      -1.517387    
+  35     dmp       10   3   2.034100       1.535941       1.324335    
+  36     dmp       10   4  -5.449916       1.605230      -3.395100    
+  37     dmp       10   5  -.3738979E-01   1.656878      -.2256641E-01
+  38     dmp       10   6  -4.574419       1.681446      -2.720526    
+  39     dmp       10   7   .2132359       1.500309       .1421280    
+  40     dmp       10   8  -.5372509       1.479935      -.3630232    
+  41     CONSTANT   0   0  -.2524097       .1442451      -1.749866    
+  42     z1        11   1  -.8754153E-01   .1685121      -.5194969    
+  43     z2        12   1  -.1285470       .7682786E-01  -1.673183    
+  44     z3        13   1   .4683515E-01   .8873305E-01   .5278208    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     di      
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     dy               1.33917        .2336663    
+     dc                .69645        .6938353    
+     di               1.48909        .1712402    
+     dx4              1.65432        .1197066    
+     dmp              2.06185        .4708555E-01
+
+
+
+
+
+
+ EQUATION    4
+ DEPENDENT VARIABLE    9     dx4     
+ FROM      54: 1 UNTIL      88: 4
+ TOTAL OBSERVATIONS    140     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   140     DEGREES OF FREEDOM     96
+ R**2            .71660537     RBAR**2         .58966819
+ SSR         .38175849E-02     SEE         .63060692E-02
+ DURBIN-WATSON  2.03642781
+ Q(  33)=   17.0789       SIGNIFICANCE LEVEL  .989972    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     dy         6   1  -.1576124       .9145788E-01  -1.723334    
+   2     dy         6   2  -.6493366E-01   .9379417E-01  -.6922995    
+   3     dy         6   3  -.8102206E-01   .9474575E-01  -.8551524    
+   4     dy         6   4  -.2224935E-01   .9700526E-01  -.2293623    
+   5     dy         6   5   .2836563E-01   .9794345E-01   .2896124    
+   6     dy         6   6   .9649743E-01   .9291725E-01   1.038531    
+   7     dy         6   7   .7623985E-01   .8599510E-01   .8865605    
+   8     dy         6   8   .8246741E-02   .8235086E-01   .1001415    
+   9     dc         7   1   .1743706       .1163415       1.498782    
+  10     dc         7   2   .9546209E-01   .1178046       .8103426    
+  11     dc         7   3   .2549248E-01   .1185708       .2149980    
+  12     dc         7   4  -.1129815       .1181041      -.9566262    
+  13     dc         7   5  -.2406918E-01   .1208481      -.1991688    
+  14     dc         7   6   .1048358E-01   .1163408       .9011094E-01
+  15     dc         7   7   .1893111E-01   .1104108       .1714607    
+  16     dc         7   8  -.2006892       .1091547      -1.838576    
+  17     di         8   1   .4099430E-01   .4222968E-01   .9707461    
+  18     di         8   2   .6958806E-01   .4192402E-01   1.659861    
+  19     di         8   3  -.1478121E-01   .4172853E-01  -.3542231    
+  20     di         8   4  -.3637640E-01   .4206803E-01  -.8647043    
+  21     di         8   5  -.2292529E-01   .4027733E-01  -.5691861    
+  22     di         8   6  -.1344223E-01   .4017941E-01  -.3345552    
+  23     di         8   7   .2784474E-01   .3991354E-01   .6976264    
+  24     di         8   8   .7135773E-02   .3627024E-01   .1967390    
+  25     dx4        9   1   .4505003       .9867725E-01   4.565392    
+  26     dx4        9   2  -.2286372E-01   .1053595      -.2170067    
+  27     dx4        9   3   .1003355       .1053485       .9524148    
+  28     dx4        9   4  -.8847933E-01   .1039140      -.8514671    
+  29     dx4        9   5   .3334989       .1014688       3.286715    
+  30     dx4        9   6  -.5131996E-01   .1051108      -.4882463    
+  31     dx4        9   7   .6123930E-01   .1042506       .5874239    
+  32     dx4        9   8  -.1095425       .9279110E-01  -1.180528    
+  33     dmp       10   1  -2.312616       .3754686      -6.159281    
+  34     dmp       10   2   .5845344       .4542328       1.286861    
+  35     dmp       10   3  -.6796057       .4934630      -1.377217    
+  36     dmp       10   4   .9771886       .5157239       1.894790    
+  37     dmp       10   5  -1.132608       .5323175      -2.127692    
+  38     dmp       10   6   .5045682       .5402107       .9340211    
+  39     dmp       10   7  -.5544894       .4820154      -1.150356    
+  40     dmp       10   8  -.1368960       .4754697      -.2879173    
+  41     CONSTANT   0   0  -.3733631E-01   .4634269E-01  -.8056568    
+  42     z1        11   1   .4967078E-03   .5413913E-01   .9174654E-02
+  43     z2        12   1  -.3526643E-01   .2468305E-01  -1.428771    
+  44     z3        13   1  -.2506001E-01   .2850792E-01  -.8790542    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     dx4     
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     dy                .71644        .6764832    
+     dc                .86435        .5493267    
+     di                .83817        .5713794    
+     dx4              4.68047        .7364666E-04
+     dmp              6.15269        .2153859E-05
+
+
+
+
+
+
+ EQUATION    5
+ DEPENDENT VARIABLE   10     dmp     
+ FROM      54: 1 UNTIL      88: 4
+ TOTAL OBSERVATIONS    140     SKIPPED/MISSING         0
+ USABLE OBSERVATIONS   140     DEGREES OF FREEDOM     96
+ R**2            .50451916     RBAR**2         .28258503
+ SSR         .33015497E-03     SEE         .18544849E-02
+ DURBIN-WATSON  1.96887807
+ Q(  33)=   20.6680       SIGNIFICANCE LEVEL  .953354    
+ NO.     LABEL    VAR  LAG    COEFFICIENT   STAND. ERROR    T-STATISTIC
+ ***    *******   ***  ***   ************   ************   ************
+   1     dy         6   1  -.6630817E-02   .2689588E-01  -.2465366    
+   2     dy         6   2   .4014288E-02   .2758293E-01   .1455352    
+   3     dy         6   3  -.2311700E-01   .2786277E-01  -.8296736    
+   4     dy         6   4  -.1057739E-01   .2852725E-01  -.3707822    
+   5     dy         6   5  -.3512108E-01   .2880315E-01  -1.219348    
+   6     dy         6   6  -.3142150E-01   .2732505E-01  -1.149916    
+   7     dy         6   7  -.4460024E-01   .2528938E-01  -1.763595    
+   8     dy         6   8  -.3522131E-01   .2421769E-01  -1.454363    
+   9     dc         7   1   .2317277E-01   .3421365E-01   .6772961    
+  10     dc         7   2  -.2234276E-01   .3464390E-01  -.6449262    
+  11     dc         7   3  -.2122722E-01   .3486922E-01  -.6087665    
+  12     dc         7   4   .1052157E-01   .3473198E-01   .3029360    
+  13     dc         7   5   .2044070E-01   .3553894E-01   .5751634    
+  14     dc         7   6   .2385455E-01   .3421342E-01   .6972279    
+  15     dc         7   7   .3516147E-01   .3246954E-01   1.082907    
+  16     dc         7   8  -.8050484E-03   .3210014E-01  -.2507928E-01
+  17     di         8   1   .7721352E-02   .1241888E-01   .6217432    
+  18     di         8   2  -.1542085E-01   .1232899E-01  -1.250780    
+  19     di         8   3  -.2403790E-02   .1227150E-01  -.1958840    
+  20     di         8   4  -.1870252E-01   .1237134E-01  -1.511762    
+  21     di         8   5   .3785799E-02   .1184473E-01   .3196188    
+  22     di         8   6   .4753000E-02   .1181593E-01   .4022534    
+  23     di         8   7   .5196544E-02   .1173775E-01   .4427207    
+  24     di         8   8  -.2784372E-02   .1066633E-01  -.2610431    
+  25     dx4        9   1   .8448009E-02   .2901894E-01   .2911205    
+  26     dx4        9   2   .5147603E-02   .3098406E-01   .1661371    
+  27     dx4        9   3   .1670305E-01   .3098083E-01   .5391415    
+  28     dx4        9   4   .1263823E-02   .3055896E-01   .4135687E-01
+  29     dx4        9   5   .2723570E-01   .2983987E-01   .9127285    
+  30     dx4        9   6   .8983065E-02   .3091092E-01   .2906114    
+  31     dx4        9   7  -.5601087E-02   .3065795E-01  -.1826960    
+  32     dx4        9   8   .4994112E-01   .2728795E-01   1.830153    
+  33     dmp       10   1   .1642827       .1104176       1.487832    
+  34     dmp       10   2  -.5492765       .1335805      -4.111951    
+  35     dmp       10   3   .2251660       .1451173       1.551614    
+  36     dmp       10   4  -.2295064       .1516638      -1.513258    
+  37     dmp       10   5   .1337735       .1565436       .8545447    
+  38     dmp       10   6  -.7863867E-01   .1588648      -.4950037    
+  39     dmp       10   7  -.2024616       .1417508      -1.428293    
+  40     dmp       10   8   .4718124E-01   .1398258       .3374286    
+  41     CONSTANT   0   0   .3387400E-01   .1362843E-01   2.485539    
+  42     z1        11   1  -.3821030E-01   .1592120E-01  -2.399963    
+  43     z2        12   1   .1647447E-01   .7258776E-02   2.269593    
+  44     z3        13   1  -.2511589E-01   .8383591E-02  -2.995839    
+
+
+
+
+     F-TESTS, DEPENDENT VARIABLE     dmp     
+    VARIABLE      F-STATISTIC      SIGNIF. LEVEL
+     dy                .65256        .7316079    
+     dc                .40888        .9129981    
+     di                .63436        .7470632    
+     dx4               .79684        .6067287    
+     dmp              3.84116        .5870818E-03
+
+
+
+  Epsilon variance-covariance matrix:  
+
+          COVARIANCE/CORRELATION MATRIX
+     VARIABLE           dy           dc           di           dx4     
+           SERIES LAG   14   0       15   0       16   0       17   0
+     dy        14   0   .83928E-04   .53075       .65294       .85619E-01
+     dc        15   0   .25273E-04   .27017E-04   .40702       .12368    
+     di        16   0   .97225E-04   .34386E-04   .26418E-03   .55073E-01
+     dx4       17   0   .40960E-05   .33570E-05   .46743E-05   .27268E-04
+     dmp       18   0   .63418E-05   .15579E-05   .11272E-04  -.12752E-05
+
+
+
+     VARIABLE           dmp     
+           SERIES LAG   18   0
+     dy        14   0   .45078    
+     dc        15   0   .19517    
+     di        16   0   .45160    
+     dx4       17   0  -.15902    
+     dmp       18   0   .23582E-05
+
+
+
+  Log determinant of VCV matrix =    -52.863     
+
+ VARIABLES IN CROSS-MOMENT MATRIX
+ FROM      54: 1 UNTIL      88: 4
+ Series     dy       (    6 )   LAGS    1 TO    8
+ Series     dc       (    7 )   LAGS    1 TO    8
+ Series     di       (    8 )   LAGS    1 TO    8
+ Series     dx4      (    9 )   LAGS    1 TO    8
+ Series     dmp      (   10 )   LAGS    1 TO    8
+ Series     CONSTANT (    0 )
+ Series     z1       (   11 )   LAGS    1 TO    1
+ Series     z2       (   12 )   LAGS    1 TO    1
+ Series     z3       (   13 )   LAGS    1 TO    1
+  
+  
+                            Table       1 
+  
+       BHat Fraction of Variance of First Differences Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.       .63      6.74     11.05     68.75      8.47
+      4.      5.21      8.91     20.42     51.73      7.26
+      8.      5.24      9.66     15.73     46.52      6.86
+     12.      7.58     11.40     16.67     42.55      8.90
+     16.      7.38     10.90     16.13     41.98      9.09
+     20.      7.60     10.80     16.34     41.69      9.01
+     24.      7.52     10.61     16.04     40.78      9.01
+      0.       .00       .00       .00       .00       .00
+  
+  
+       RMSE Fraction of Variance of First Differences Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     22.05      4.12     25.31     42.68     12.37
+      4.     17.60      4.35     12.11     29.06     12.99
+      8.     17.77      7.02     17.29     25.28     14.89
+     12.     17.31      7.18     15.28     22.13     12.46
+     16.     16.61      7.53     14.47     21.53     11.77
+     20.     16.59      9.31     15.12     19.95     11.60
+     24.     16.86     10.86     15.29     18.54     11.41
+      0.       .00       .00       .00       .00       .00
+  
+  
+       Mean Fraction of Variance of First Differences Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     17.39      5.04     25.41     30.32     14.71
+      4.     18.96      9.31     29.15     29.76     15.95
+      8.     18.70     13.89     28.28     30.11     18.12
+     12.     20.30     15.35     27.04     28.21     18.20
+     16.     19.68     15.73     25.98     27.99     18.16
+     20.     19.92     17.92     26.54     28.48     18.27
+     24.     20.14     19.12     26.71     28.88     18.17
+      0.       .00       .00       .00       .00       .00
+  
+  
+       SDev Fraction of Variance of First Differences Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     14.33      3.75     20.85     18.59     10.68
+      4.     11.00      4.33      8.40     19.02      9.66
+      8.     11.61      5.61     11.89     19.24      9.75
+     12.     11.74      5.99     11.22     16.85      8.30
+     16.     11.16      5.77     10.60     16.37      7.51
+     20.     11.12      5.99     11.16     14.95      6.98
+     24.     11.18      6.75     10.95     14.22      6.81
+      0.       .00       .00       .00       .00       .00
+  
+  
+           BHat Fraction of Variance of Levels Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.       .63      6.74     11.05     68.75      8.47
+      4.      5.54     20.38      4.45     66.55      8.53
+      8.     20.57     32.79     10.27     62.66      7.98
+     12.     42.24     47.30     23.15     63.79      6.18
+     16.     52.73     56.06     27.27     62.82      5.01
+     20.     57.73     62.34     27.87     62.52      4.64
+     24.     61.97     67.85     29.14     63.84      4.61
+    120.    100.00    100.00    100.00     61.40      4.42
+  
+  
+           RMSE Fraction of Variance of Levels Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     22.05      4.12     25.31     42.68     12.37
+      4.     25.49     11.78     25.42     46.72     27.57
+      8.     16.55     19.72     15.42     44.04     34.77
+     12.     19.15     30.15     14.68     43.45     36.95
+     16.     24.80     33.49     20.14     40.63     36.87
+     20.     25.31     31.62     19.79     37.02     36.17
+     24.     24.23     24.53     18.07     32.78     37.00
+    120.      1.14      5.19      1.06     25.36     37.34
+  
+  
+           Mean Fraction of Variance of Levels Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     17.39      5.04     25.41     30.32     14.71
+      4.     22.92     12.45     23.70     31.71     27.39
+      8.     22.47     28.33     20.98     34.11     34.78
+     12.     27.75     39.08     25.19     36.10     37.46
+     16.     34.12     45.23     29.27     38.34     37.97
+     20.     38.30     51.85     29.77     41.70     37.99
+     24.     42.69     60.42     30.78     46.40     39.29
+    120.     99.36     97.59     99.34     55.49     34.45
+  
+  
+           SDev Fraction of Variance of Levels Due 
+               to Innovation in Component #       1 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     14.33      3.75     20.85     18.59     10.68
+      4.     18.65      8.71     16.60     31.12     20.10
+      8.     16.44     19.21     11.09     33.54     22.16
+     12.     12.53     29.01     14.53     33.48     19.67
+     16.     16.39     31.69     20.04     32.43     16.51
+     20.     16.22     29.83     19.70     30.61     13.99
+     24.     14.67     23.38     18.00     27.76     12.89
+    120.       .94      4.60       .83     24.66     22.18
+  
+  
+  
+                            Table       2 
+  
+       BHat Fraction of Variance of First Differences Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     72.82      5.90     59.48      6.92     41.25
+      4.     65.32      6.85     54.87     19.80     38.69
+      8.     67.06     17.08     63.88     27.61     37.14
+     12.     62.10     15.24     58.89     25.26     35.91
+     16.     60.32     15.72     56.69     25.03     35.15
+     20.     59.91     16.41     56.40     25.19     35.08
+     24.     59.86     17.60     56.33     25.66     35.12
+      0.       .00       .00       .00       .00       .00
+  
+  
+       RMSE Fraction of Variance of First Differences Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     33.06     12.74     34.42     37.01     28.07
+      4.     25.80      9.86     24.00     23.04     25.16
+      8.     27.89      5.97     29.50     16.08     23.16
+     12.     26.22      4.87     26.83     16.23     20.94
+     16.     25.33      4.51     25.24     16.15     19.80
+     20.     25.41      4.14     25.69     14.97     19.32
+     24.     25.67      4.19     25.92     13.99     19.13
+      0.       .00       .00       .00       .00       .00
+  
+  
+       Mean Fraction of Variance of First Differences Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     44.69     11.40     32.01     36.11     35.95
+      4.     43.31     13.78     33.64     34.71     33.67
+      8.     42.41     17.89     37.02     32.12     30.64
+     12.     37.79     16.68     33.82     31.84     30.14
+     16.     36.79     16.99     33.22     30.46     28.95
+     20.     36.25     16.80     32.64     29.41     28.30
+     24.     35.92     16.80     32.22     29.29     28.40
+      0.       .00       .00       .00       .00       .00
+  
+  
+       SDev Fraction of Variance of First Differences Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     17.39     11.49     20.73     22.75     27.56
+      4.     13.46      7.02     11.18     17.57     24.65
+      8.     13.03      5.91     12.20     15.43     22.24
+     12.      9.81      4.66      9.56     14.83     20.13
+     16.      9.38      4.33      9.30     15.21     18.81
+     20.      9.28      4.12      9.78     14.37     18.09
+     24.      9.26      4.11      9.49     13.51     17.91
+      0.       .00       .00       .00       .00       .00
+  
+  
+           BHat Fraction of Variance of Levels Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     72.82      5.90     59.48      6.92     41.25
+      4.     77.96      4.63     76.32      6.86     72.05
+      8.     58.62     11.03     57.02     21.86     80.10
+     12.     39.79     17.21     47.48     26.39     83.44
+     16.     32.40     17.08     45.83     28.91     86.60
+     20.     28.11     14.92     43.16     29.69     88.15
+     24.     25.13     12.70     42.05     29.09     88.83
+    120.       .00       .00       .00     38.60     95.58
+  
+  
+           RMSE Fraction of Variance of Levels Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     33.06     12.74     34.42     37.01     28.07
+      4.     34.52     15.70     37.03     39.11     35.70
+      8.     18.48     13.18     16.22     38.66     41.66
+     12.      9.85     16.61     15.19     36.21     42.71
+     16.     14.37     16.42     19.07     32.72     42.78
+     20.     15.03     13.69     17.72     29.36     42.28
+     24.     13.22      9.53     16.24     26.18     42.88
+    120.       .49      4.82       .51     25.36     37.55
+  
+  
+           Mean Fraction of Variance of Levels Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     44.69     11.40     32.01     36.11     35.95
+      4.     51.00     14.15     47.48     31.77     44.99
+      8.     51.12     18.14     43.98     36.57     42.56
+     12.     44.82     20.75     40.36     37.38     43.23
+     16.     39.02     20.06     36.38     37.59     45.97
+     20.     35.72     17.34     34.80     36.61     47.76
+     24.     32.64     13.54     33.98     34.38     47.83
+    120.       .27      2.21       .23     44.51     64.52
+  
+  
+           SDev Fraction of Variance of Levels Due 
+               to Innovation in Component #       2 
+  
+   Horizon    vble#1    vbl#2  . . . 
+  
+      1.     17.39     11.49     20.73     22.75     27.56
+      4.     21.56     12.49     23.22     30.16     23.29
+      8.     16.89     11.09      9.65     35.75     18.07
+     12.      8.47     16.23     13.42     34.50     14.41
+     16.     12.75     16.15     16.57     31.54     13.38
+     20.     12.96     13.47     15.63     28.53     12.49
+     24.     10.87      9.49     14.09     25.64     12.55
+    120.       .41      4.29       .45     24.66     21.10
+  
+   
+   
+                            Table       3 
+   
+       BHat Fraction of Variance of First Differences Due 
+            to Innovation in all Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.     73.45     12.64     70.53     75.67     49.72
+      4.     70.53     15.76     75.29     71.53     45.95
+      8.     72.31     26.74     79.61     74.13     44.00
+     12.     69.69     26.63     75.56     67.81     44.82
+     16.     67.70     26.62     72.82     67.02     44.25
+     20.     67.51     27.21     72.73     66.88     44.09
+     24.     67.38     28.21     72.37     66.44     44.13
+      0.       .00       .00       .00       .00       .00
+   
+   
+       RMSE Fraction of Variance of First Differences Due 
+            to Innovation in all Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.     14.02     13.72     28.69     22.56     21.59
+      4.      9.62     10.62     19.32     25.00     19.73
+      8.     12.11      7.64     16.58     21.98     18.30
+     12.     12.28      6.86     15.71     17.89     15.71
+     16.     11.98      7.65     14.73     19.08     15.15
+     20.     12.16      9.48     14.74     19.00     14.97
+     24.     12.48     10.38     14.53     17.97     14.96
+      0.       .00       .00       .00       .00       .00
+   
+   
+       Mean Fraction of Variance of First Differences Due 
+            to Innovation in All Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.     62.08     16.44     57.42     66.44     50.67
+      4.     62.27     23.09     62.78     64.47     49.62
+      8.     61.12     31.78     65.30     62.23     48.76
+     12.     58.09     32.03     60.86     60.05     48.34
+     16.     56.48     32.72     59.20     58.45     47.12
+     20.     56.17     34.73     59.18     57.90     46.57
+     24.     56.06     35.92     58.93     58.18     46.57
+      0.       .00       .00       .00       .00       .00
+   
+   
+       SDev Fraction of Variance of First Differences Due 
+            to Innovation in All Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.      8.20     13.19     25.52     20.59     21.57
+      4.      4.93      7.68     14.73     23.99     19.39
+      8.      4.64      5.75      8.39     18.48     17.66
+     12.      4.03      4.25      5.54     16.12     15.31
+     16.      4.18      4.62      5.59     17.05     14.87
+     20.      4.38      5.77      5.79     16.74     14.76
+     24.      5.24      6.94      5.53     15.95     14.76
+      0.       .00       .00       .00       .00       .00
+   
+   
+           BHat Fraction of Variance of Levels Due 
+          to Innovation in All Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.     73.45     12.64     70.53     75.67     49.72
+      4.     83.50     25.01     80.77     73.41     80.58
+      8.     79.19     43.82     67.29     84.51     88.08
+     12.     82.03     64.51     70.63     90.18     89.62
+     16.     85.14     73.14     73.10     91.73     91.61
+     20.     85.84     77.26     71.03     92.21     92.79
+     24.     87.11     80.55     71.19     92.93     93.45
+    120.    100.00    100.00    100.00    100.00    100.00
+   
+   
+           RMSE Fraction of Variance of Levels Due 
+          to Innovation in All Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.     14.02     13.72     28.69     22.56     21.59
+      4.     11.49     16.29     18.77     31.91     19.19
+      8.      6.51     18.20     10.84     32.70     18.60
+     12.     12.99     20.42     13.48     29.43     12.82
+     16.     16.34     20.93     16.12     22.22      9.65
+     20.     14.65     19.96     14.20     17.46      8.58
+     24.     13.69     16.33     12.99     14.97      8.11
+    120.       .65       .38       .65       .00      2.02
+   
+   
+           Mean Fraction of Variance of Levels Due 
+          to Innovation in All Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.     62.08     16.44     57.42     66.44     50.67
+      4.     73.92     26.60     71.18     63.47     72.38
+      8.     73.59     46.47     64.96     70.69     77.34
+     12.     72.57     59.84     65.56     73.49     80.70
+     16.     73.13     65.29     65.65     75.93     83.95
+     20.     74.02     69.19     64.57     78.31     85.76
+     24.     75.34     73.96     64.76     80.79     87.13
+    120.     99.63     99.79     99.57    100.00     98.98
+   
+   
+           SDev Fraction of Variance of Levels Due 
+          to Innovation in All Permanent Components 
+   
+   Horizon    vble#1    vbl#2  . . .  
+   
+      1.      8.20     13.19     25.52     20.59     21.57
+      4.      6.35     16.21     16.14     30.32     17.35
+      8.      3.33     18.00     10.59     29.64     15.18
+     12.      8.90     19.88     12.49     24.24      9.21
+     16.     11.09     19.40     14.30     15.62      5.87
+     20.      8.66     18.26     12.65     10.57      4.92
+     24.      6.99     14.94     11.29      8.75      5.09
+    120.       .54       .32       .49       .00      1.74
+   
+
+
+          NORMAL COMPLETION OF JOB
+                    HALT AT    0
+                        0 ERRORS        0 WARNINGS
+

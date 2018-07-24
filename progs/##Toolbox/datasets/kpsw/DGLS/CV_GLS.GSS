@@ -1,0 +1,154 @@
+
+/*  cv_gls.gss, JHS 11/13/90
+    Calculates cointegrating vectors for the 6 variable system y,c,in,R,dp,mp
+    by dynamic gls. Can be easily extended to any other system of equations.
+*/
+#include dgls_ar.prc;
+
+format 6,3;
+
+/* ***** Dates for Data set ****** */
+b1q= 1;        @ Beginning @
+b1y = 47;
+e1q = 4;       @ End @
+e1y = 88;
+/* ***** Dates for Regressions ****** */
+b2q= 1;        @ Beginning @
+b2y = 54;
+e2q = 2;       @ End @
+e2y = 86;
+
+fout = "cv_gls.out";$fout;" ";
+output file =^fout reset;
+output on;
+
+/*  Read in Data and transform */
+
+nper  = (e1y-b1y-1)*4 + (4-b1q+1) + e1q;  @ number of periods in data set @
+nperg = (e2y-b2y-1)*4 + (4-b2q+1) + e2q;  @ Number of periods for regression @
+fperg = (b2y-b1y-1)*4 + (4-b1q+1) + b2q;  @ First Period for regression @
+lperg = (e2y-b1y-1)*4 + (4-b1q+1) + e2q; @ last period for regression @
+
+load path = \kpsw\data;
+ load c[nper,1]=c.prn;
+ load in[nper,1]=in.prn;
+ load y[nper,1]=y.prn;
+ load mp[nper,1]=mp.prn;
+ load dp[nper,1]=dp.prn;
+ load r[nper,1]=r.prn;
+ dp=400*dp;
+
+maxit=10;
+
+" Table 2 and 3 cointegrating regressions";
+nlag = 5; do until nlag>5;
+ nar = 4;
+@ d9 = dgls_ar(c~in,y,fperg,nper-nlag,nlag,nar,maxit);           @
+ d9 = dgls_ar(c,y~(r-dp),fperg,nper-nlag,nlag,nar,maxit);
+ d9 = dgls_ar(in,y~(r-dp),fperg,nper-nlag,nlag,nar,maxit);
+ d9 = dgls_ar(c-y,r-dp,fperg,nper-nlag,nlag,nar,maxit);
+ d9 = dgls_ar(in-y,r-dp,fperg,nper-nlag,nlag,nar,maxit);
+ d9 = dgls_ar(mp,y~r,fperg,nper-nlag,nlag,nar,maxit);
+@ d9 = dgls_ar(c~in~mp,y~r~dp,fperg,nper-nlag,nlag,nar,maxit); @
+nlag=nlag+1; endo;
+
+
+format /RDN 10,3;
+" ------------------ Hypothesis tests: ---------------------------------";
+nlag=5; nar=4;
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T1C:";
+rr=eye(2);
+let r0[2,1]= 1 1;
+
+ df9 = rows(rr); d9 = dgls_ar(c~in,y,nlag+nar+2,nper-nlag,nlag,nar,maxit);
+ bet=d9[.,1]; vb=d9[.,2:cols(d9)];
+ chis=(rr*bet-r0)'*invpd(rr*vb*rr')*(rr*bet-r0);
+ " ";" **chisquare stat, p-value, df: " ";" chis cdfchic(chis,df9) df9;
+
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T2A:";
+rr=eye(2);
+let r0[2,1]= 1 0;
+
+ df9 = rows(rr); d9 = dgls_ar(mp,y~r,fperg,nper-nlag,nlag,nar,maxit);
+ bet=d9[.,1]; vb=d9[.,2:cols(d9)];
+ chis=(rr*bet-r0)'*invpd(rr*vb*rr')*(rr*bet-r0);
+ " ";" **chisquare stat, p-value, df: " ";" chis cdfchic(chis,df9) df9;
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B1:";
+ii=eye(9);
+rr=ii[1:6 9,.];
+let r0[7,1]= 1 0 0 1 0 0 0;
+
+ df9 = rows(rr); d9 = dgls_ar(c~in~mp,y~r~dp,fperg,nper-nlag,nlag,nar,maxit);
+ bet=d9[.,1]; vb=d9[.,2:cols(d9)];
+ chis=(rr*bet-r0)'*invpd(rr*vb*rr')*(rr*bet-r0);
+ " ";" **chisquare stat, p-value, df: " ";" chis cdfchic(chis,df9) df9;
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B2:";
+ii=eye(8);
+rr=ii[1:4 7:8,.];
+let r0[6,1]= 1 0 1 0 0 1;
+
+ df9 = rows(rr); d9 = dgls_ar(c~in~mp~dp,y~r,fperg,nper-nlag,nlag,nar,maxit);
+ bet=d9[.,1]; vb=d9[.,2:cols(d9)];
+ chis=(rr*bet-r0)'*invpd(rr*vb*rr')*(rr*bet-r0);
+ " ";" **chisquare stat, p-value, df: " ";" chis cdfchic(chis,df9) df9;
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B3:";
+rr=zeros(5,9);
+rr[1,1]=1;
+rr[2,2]=1;
+rr[2,3]=1;
+rr[3,4]=1;
+rr[4,5]=1;
+rr[4,6]=1;
+rr[5,9]=1;
+let r0[5,1]= 1 0 1 0 0 ;
+
+ df9 = rows(rr); d9 = dgls_ar(c~in~mp,y~r~dp,fperg,nper-nlag,nlag,nar,maxit);
+ bet=d9[.,1]; vb=d9[.,2:cols(d9)];
+ chis=(rr*bet-r0)'*invpd(rr*vb*rr')*(rr*bet-r0);
+ " ";" **chisquare stat, p-value, df: " ";" chis cdfchic(chis,df9) df9;
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T3B4:";
+rr=zeros(7,9);
+
+rr[1,1]=1;
+rr[2,2]=1;
+rr[2,3]=1;
+rr[3,4]=1;
+rr[4,5]=1;
+rr[4,6]=1;
+rr[5,7]=1;
+rr[6,8]=1;
+rr[7,9]=1;
+let r0[7,1]= 1 0 1 0 1 0 0 ;
+
+ df9 = rows(rr); d9 = dgls_ar(c~in~mp,y~r~dp,fperg,nper-nlag,nlag,nar,maxit);
+ bet=d9[.,1]; vb=d9[.,2:cols(d9)];
+ chis=(rr*bet-r0)'*invpd(rr*vb*rr')*(rr*bet-r0);
+ " ";" **chisquare stat, p-value, df: " ";" chis cdfchic(chis,df9) df9;
+
+"----------------------------------------------------------------------- ";
+"           test of hypothesis T6M5:";
+
+ii=eye(6);
+rr=ii[1:4,.];
+let r0[4,1]= 1 0 1 0;
+
+ df9 = rows(rr); d9 = dgls_ar(c~in~mp,y~r,fperg,nper-nlag,nlag,nar,maxit);
+ bet=d9[.,1]; vb=d9[.,2:cols(d9)];
+ chis=(rr*bet-r0)'*invpd(rr*vb*rr')*(rr*bet-r0);
+ " ";" **chisquare stat, p-value, df: " ";" chis cdfchic(chis,df9) df9;
+
+output off;
+
+

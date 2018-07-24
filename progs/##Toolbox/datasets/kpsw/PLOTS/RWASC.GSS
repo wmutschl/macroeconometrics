@@ -1,0 +1,24 @@
+/* Program for Converting key ASC files to format used
+   in plotting programs, mww 11/18/90
+*/
+
+@ 6 variable Model Impulse Responses @
+load a[96,7]=irfl6u_6.asc;
+a1=a[1:32,.];
+a2=a[33:64,.];
+a3=a[65:96,.];
+output file = f61asc.dat reset; output on;
+a1[1:25,2:4];
+output off;
+output file = f62asc.dat reset; output on;
+a2[1:25,2:4];
+output off;
+output file = f63asc.dat reset; output on;
+a3[1:25,2:4];
+output off;
+@ 6 variable Model -- Historical Decomp @
+load a[384,4]=dcmp6u_6.asc;
+output file = f5asc.dat reset; output on;
+a;
+output off;
+

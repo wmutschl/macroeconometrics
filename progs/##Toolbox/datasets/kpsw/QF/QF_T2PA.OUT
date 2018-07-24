@@ -1,0 +1,56 @@
+DATE :  9/26/1990
+TIME :  0:42:03
+ 
+ 
+ 
+ 
+                                 Data file = D:\KPSW\DATA\MPYR.PRN
+      Total number of time periods in file =  168 
+                First period used for test =   29 
+                 Last period used for test =  168 
+                     Number of data series =    3 
+                             Preprocessing = Linear detrending
+                 H0 : Number of unit roots =    3 
+ 
+ 
+ 
+      H1 : Number of unit roots = 2 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                    -30.6793             17.50 
+            1                    -17.7174             67.25 
+            2                    -15.4100             78.00 
+            3                    -19.0217             60.75 
+            4                    -19.6967             57.75 
+            5                    -19.7328             57.75 
+ 
+ 
+ 
+      H2 : Number of unit roots = 1 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                     -8.6839             69.75 
+            1                    -17.7174             15.00 
+            2                    -15.3404             25.25 
+            3                    -13.2053             37.00 
+            4                    -11.8144             46.00 
+            5                     -9.9555             60.00 
+ 
+ 
+ 
+      H3 : Number of unit roots = 0 
+ 
+      Number of lags                QF              P-value(%)
+      ==============            ==========          ==========
+            0                     -8.6839             22.25 
+            1                    -14.6875              1.25 
+            2                    -15.3404              0.75 
+            3                    -13.2053              2.75 
+            4                    -11.8144              5.75 
+            5                     -9.9555             13.50 
+ 
+ 
+ 
+

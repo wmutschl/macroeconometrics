@@ -1,0 +1,127 @@
+* PLTDCP.rts    JHS 7/5/89 
+*  computes, then plots historical decompositions (forecast error
+*  decompositions), six-variable models
+*    for KPSW2,k figs 4a and 4b
+*
+******* Figure 3, Historical Decomp of private GNP *************
+*
+*  This program reads in the VAR-residuals, permananent shocks
+*   and IRF's to form the decomposition of the fh-ahead forecast
+*   decomposition
+*
+ieval fh = 12   ;* forecast horizon
+ieval nv = 6
+ieval nk = 3
+*
+ieval nimpr=32
+cal 47 1 4
+all 2*nv+4*nv*nv+nk 88:4
+*
+*env graphic=gprinter
+*open plot dcmp6u_6.plt
+open copy dcmp6u_6.asc
+*
+ieval istr1 = 1; ieval istr2 = nk
+ieval ieps1 = istr2+1; ieval ieps2 = ieps1+nv-1
+ieval irfl1 = ieps2+1; ieval irfl2 = irfl1+(nk*nv)-1
+ieval irfel1 = irfl2+1; ieval irfel2 = irfel1+(nv*nv)-1
+ieval idcmp1 = irfel2+2 ; ieval idcmp2 = idcmp1+nk-1
+*
+* Note: Labels are model specific
+*
+*   labels for model 5k
+*
+labels idcmp1 to idcmp2
+# 'Real Sh' 'Infl sh' 'Int sh'
+*
+*
+ieval n1=(54:1) ; ieval n2=(88:4)
+
+*dis(unit=copy) n1+fh n2
+*dis(unit=copy) ' '
+
+open data prms6u_6.asc
+data(for=free,org=obs) n1 n2 istr1 to istr2
+close data
+open data prme6u_6.asc
+data(for=free,org=obs) n1 n2 ieps1 to ieps2
+close data
+open data irfe6u_6.asc
+do i=1 ,nv
+ data(for=free,org=obs) 1 nimpr tr (irfel1+(i-1)*nv+1) to $
+                        (irfel1+(i-1)*nv+nv)
+end do i
+close data
+open data irfl6u_6.asc
+do i=1 ,nk
+ data(for=free,org=obs) 1 nimpr tr (irfl1+(i-1)*nv+1) to $
+                        (irfl1+(i-1)*nv+nv)
+end do i
+close data
+*
+**********************************************************
+* Calculate Contributions to fh-quarter ahead forecasts
+**********************************************************
+*open data \kpsw1\data\kpsw.rat
+* data(for=rats) 51:1 85:4 bcturnpt
+* close data
+* zer bcdates 
+* set bcdates 51:1 85:4 = (bcturnpt(t).ne.0)
+*def graph(key=none,min=-.1,max=.1,dates,grid=bcdates)
+*def graph(key=none,dates)
+*grparm(vertical) 17 .23 25 .05  ;* for 2-panel graph
+*grparm(vertical) 17 .17 25 .03   ;* for 3-panel graph
+do n = 1,nv
+*
+zeros total
+do j = 1,fh
+ do i = 1,nv
+  set total n1+fh n2 = total(t)+(irfel1+(i-1)*nv+n)(j)*(ieps1+i-1)(t+1-j)
+ end do i
+endo do j
+*
+* Components from structural errors
+*
+do i = 1,nk
+zeros idcmp1+i-1
+ do j = 1,fh
+  set idcmp1+i-1 n1+fh n2 = (idcmp1+i-1)(t)+$
+                            (irfl1+(i-1)*nv+n)(j)*(istr1+i-1)(t+1-j)
+ end do i
+end do j
+set feres n1+fh n2 = total(t)
+set feperm n1+fh n2 = 0.0
+do i=idcmp1,(idcmp1+nk-1)
+ set feperm n1+fh n2 = feperm(t) + i(t)
+ set feres n1+fh n2 = feres(t) - i(t)
+endo
+print(dates) n1+fh n2 total idcmp1 to (idcmp1+nk-1) feres
+copy(unit=copy,org=obs) n1+fh n2 total idcmp1 to (idcmp1+nk-1)
+*dis(unit=copy) ' '
+*
+* ----- Graph format #1: one page per variable
+*spgraph(vfields=fix(nk+1))
+* do i=1,nk
+*  gra 2 ;# total  n1+fh n2 ;#(idcmp1+i-1)   n1+fh n2
+* end
+* gra 2 ;# total  n1+fh n2 ;#feres n1+fh n2
+*spgraph(done)
+* ----- Graph format #2: nk decomps per page
+* grparm  11 0.5 12 0.5 13 0.5 14 0.4 17 .17 25 .14
+* ieval hf=n-fix(3.0*fix((n-1)/3))
+* if hf .eq. 1
+*  begin;
+*   spgra(done);
+*   spgra(vfields=(nk+1),hfields=3);
+*  end
+* do i=1,nk
+*  gra 2 hf i ;#total n1+fh n2 ;#(idcmp1+i-1) n1+fh n2
+* endo
+* gra 2 hf nk+1 ;# total  n1+fh n2 ;#feperm n1+fh n2
+endo n;
+*
+*spgra(done)
+close copy
+* close plot
+end
+

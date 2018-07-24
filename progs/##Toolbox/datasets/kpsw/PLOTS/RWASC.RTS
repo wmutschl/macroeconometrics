@@ -1,0 +1,29 @@
+* Program to rewrite ascii files for structural disturbances
+* into RATS file, MWW 9/19/90
+*
+cal 1954 1 4
+all 0 88:4
+open data prms6u_6.asc
+data(for=free,org=obs) / y6s1 y6s2 y6s3
+close data
+open data \kpsw\data\kpsw1.dat
+data(for=rats,compact=average) / gnp82 gge82 p16
+close data
+*
+set y / = log(gnp82(t)-gge82(t))-log(p16(t))
+set dy  54:2 88:4 = y(t)-y(t-1)
+stats dy 54:2 88:4
+eval dym = mean
+*
+* Add mean of dy into first residuals
+*
+set y6s1 / = y6s1(t)+dym
+acc y6s1 / y6s1a
+dedit(new) ct6.dat
+include y6s1 y6s1 /
+include y6s1a y6s1a /
+include y6s2 y6s2 /
+include y6s3 y6s3 /
+save
+
+ 

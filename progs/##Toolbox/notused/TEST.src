@@ -1,0 +1,965 @@
+mSigmaU = {    0.3746   -0.0210   -0.0025    0.0251,
+   -0.0210    0.1149   -0.0693   -0.0447,
+   -0.0025   -0.0693    0.0745    0.0298,
+    0.0251   -0.0447    0.0298    0.4846};
+alpha ={-0.0065,
+   -0.0085,
+   -0.0047,
+   -0.0462};
+
+beta ={ 1.0000,
+   -0.0239,
+    3.1687,
+    1.8353}
+
+mGamma ={ 0.2344   -0.2465   -0.9799    0.0047   -0.0295   -0.5805   -0.1281   -0.1903,
+    0.2010    0.8216    0.0034   -0.0785    0.0483   -0.4597   -0.1034   -0.0958,
+   -0.1389   -0.6468   -0.1911    0.0173   -0.0029   -0.0197   -0.2627    0.0804,
+   -0.0745   -0.6341    0.0631   -0.0121   -0.2519    0.0812   -0.2300   -0.1574};
+T=81;
+mB_Res =   { -1e12 -1e12 -1e12 -1e12,
+             -1e12 -1e12 -1e12 -1e12, 
+             -1e12 -1e12 -1e12 -1e12, 
+             -1e12 0 -1e12 -1e12}; 
+mC1_Res =  { -1e12 0 0 0,
+             -1e12 -1e12 -1e12 0, 
+             -1e12 -1e12 -1e12 0, 
+             -1e12 -1e12 -1e12 0}; 
+
+eps1_tol = 1E-6;
+eps2_tol = 1E-10;
+maxIterations = 500;
+iStartValueMethod = 2;
+fixStart = .1;
+vStartUser = {.1,.2,.4,.6,.7};
+iCorr = 0;       
+imaxRetries	= 10;
+
+SVAR_UNRESTRICTED = -1e12;
+
+/*
+ This file is part of the econometric software package JMulTi.
+ Copyright (C) 2000-2005  Ralf Brueggemann, Markus Kraetzig
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+#ifos2win 
+/* to be used by library creation, windows only */
+#include var.dec
+#include svar.dec
+#endif
+
+/**
+ * SVEC ESTIMATION, August 2003, Ralf Brueggemann, Humboldt-University Berlin,
+ * some adjustments to use it with JMulTi by Markus Krätzig
+ */
+
+/**
+ * mSigmaU    - K x K matrix, reduced form covariance matrix
+ * T          - number of observations used in estimation
+ */ 
+
+/**
+ * Restriction on C and PSI can be specified here
+ *
+ *   use:
+ *    <= SVAR_UNRESTRICTED = unrestricted estimate 
+ *    0 		   = restricted to zero
+ *   other values  = restricted to specified values 
+ *
+ *  mB_Res = {   1   -1e12  0,
+ *              -1e12 1 -1e12,
+ *               0    0     1 };
+ *  
+ *  mC1_Res =  { -1e12 0   0, 
+ *              0   -1e12 0,
+ *              0     0  -1e12 };      
+ *  
+ *
+ */  
+
+/**
+ *  eps1_tol = 1E-6;	   tolerance of relative change in parameters 
+ *  eps2_tol = 1E-10; 	   tolerance for relative change in logLik
+ *  maxIterations = 500;
+ *  iStartValueMethod = 2; 1: draw randomly, 
+ *                         2: fixed values set by "fixStart", 
+ *			   3: vector specicied by user "vStartUser"
+ *  fixStart = .1;         fixed starting value, only needed when  iStartValueMethod  = 2 
+ *  vStartUser = {.1,.2,.4,.6,.7}; vector of start values, only needed when iStartValueMethod = 3  
+ *                                 dimension changes, rows(vStartUser) = cols(mS)	
+ *
+ *  iCorr = 1;             decompose correlation matrix first to obtain SV	
+ *  imaxRetries	= 10;      max. retries of randomly drawing starting values 
+ */	
+
+
+proc(10)=svec_wrapper_var(alpha, beta, beta_d, mGamma, mSigmaU,T,mB_Res,mC1_Res,eps1_tol,eps2_tol, maxIterations,iStartValueMethod,fixStart,vStartUser,iCorr,imaxRetries,fname,BS_int,bootrep,seed,var);
+local K,vg_corr,i_iRt,i_itercorr,i_coCorr,mSigmaAB,mSigmaUt,i;
+local LLnew,LR_stat,LR_prob,DegreeofOverIdent,noConvergence,mS,vs,model,nfreea,nfreeb,nfreeall;
+local vg,i_ident,tmp,vg_bs,nResB, nResC1, mC1,  mB_std,mCB_point,mB_point,vg_b;
+local m_se_B, m_tv_B, m_se_mCB, m_tv_mCB,mC,mB,bet;
+
+K  = rows(mSigmaU);
+bet=beta';
+
+tmp=vec(mB_Res);
+for i (1,rows(tmp),1);
+    if tmp[i] < SVAR_UNRESTRICTED;
+    tmp[i]=SVAR_UNRESTRICTED;
+  endif;
+endfor;
+mB_Res = reshape(tmp,K,K)';
+tmp=vec(mC1_Res);
+for i (1,rows(tmp),1);
+    if tmp[i] < SVAR_UNRESTRICTED;
+    tmp[i]=SVAR_UNRESTRICTED;
+  endif;
+endfor;
+mC1_Res = reshape(tmp,K,K)';
+
+/* initialize some variables */
+
+mC1		  = ComputeC1_svec_var(alpha, bet, mGamma);
+mS={};
+vs={};
+vg_b={};
+vg_corr 	  = 0;	
+i_iRt		  = 0;
+i_itercorr	  = 0;
+i_coCorr	  = 0;
+mB		  = 0;
+mC		  = 0;
+mSigmaAB	  = 0;
+mSigmaUt	  = 0;
+i		  = 0;
+LLnew		  = 0;
+LR_stat		  = 0;
+LR_prob		  = 0;
+DegreeofOverIdent = 0;
+noConvergence	  = 0;
+
+
+										
+{mS,vs,model,nfreea,nfreeb,nfreeall, nResB, nResC1} = GetResMatricesLR_svec_var(mB_Res, mC1_Res, mC1);
+  if model < 0;
+    retp(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10);
+  endif;
+vg  = StartingValues_svar_var(mS,iStartValueMethod,vStartUser,fixStart); 
+{i_ident, DegreeofOverIdent} = CheckIdentificationLR_svec_var(vg,mS,vs,nfreeall, nResB, nResC1);
+
+if i_ident == 1;     /* only proceed when model is identified, otherwise inform user*/    		
+  if iCorr == 1;	 /* decompose correlation matrix first to obtain SV 	*/
+    {vg_corr,i_iRT,i_itercorr, i_coCorr}  = DecompCorrelation_svar_var(mSigmaU,mS,vs,vg,T,eps1_tol,eps2_tol,DegreeofOverIdent,maxIterations,model, imaxRetries);	
+    vg = vg_corr; 
+    if i_iRT == 0 and i_coCorr == 0;	/* only estimate when 1st step was successful*/  
+      {mB,vg_b,mSigmaUt,i,LLnew,LR_stat,LR_prob, noConvergence} 
+      = MLEstSVECM_svec_var(mSigmaU, mS,vs,vg,T,eps1_tol, eps2_tol, DegreeofOverIdent,maxIterations,model);
+    endif;	
+  else;
+    {mB,vg_b,mSigmaUt,i,LLnew,LR_stat,LR_prob, noConvergence} 
+    = MLEstSVECM_svec_var(mSigmaU, mS,vs,vg,T,eps1_tol, eps2_tol, DegreeofOverIdent,maxIterations,model);
+  endif;	/* end iCorr	*/
+endif;	/* end i_ident*/
+
+
+mCB_point = mC1*mB;
+mB_point  = mB;
+vg_BS 	  = vg_b;
+
+/* Std. deviations and t-ratios */
+
+m_se_B={};
+m_tv_B={};
+m_se_mCB={};
+m_tv_mCB={};
+
+/* Bootstrap std deviations */
+if BS_int;
+  
+  {m_se_B,m_se_mCB,m_tv_B,m_tv_mCB} = 
+  BootstrapStdErr_svec_var(var,beta,beta_d,bootRep,seed,mB_Res,mC1_Res,
+  vg_bs,T,K,mB_point,mCB_point,eps1_tol, eps2_tol,DegreeofOverIdent, maxIterations);
+	
+endif;
+
+
+
+OutputResultsLR_svec_var(mB,mSigmaUt,i,LLnew,LR_stat,LR_prob,DegreeofOverIdent,T,noConvergence, maxIterations,vg,model, 
+i_ident,iCorr, i_iRT,i_itercorr, i_coCorr,vg_corr,mCB_point, nResB, nResC1,BS_int,m_se_B,m_tv_B,m_se_mCB,m_tv_mCB,fname);
+
+
+retp(mCB_point,mB_point,mS,vs,vg_bs,model,m_se_B,m_se_mCB,m_tv_B,m_tv_mCB);
+endp();
+
+
+
+/*
+**	Usage: mC1 = ComputeC1(alpha, beta, mGamma);
+**
+**	Purpose: Compute long run impact matrix for cointegrated VAR models
+**
+**	Input:		alpha:	 K x r matrix of loading coefficients
+**
+**				beta: 	 K x r matrix of cointegration coefficients related to stochastic variables
+**
+**				mGamma:  K x K(p-1) matrix coefficient matrix of lagged differences 
+**				  		 \Gamma = \Gamma_1 ... \Gamma_{p-1}  
+**
+**	ouput: 		mC1:	 K x K matrix, reduced form long run impact matrix
+*/
+proc(1)=ComputeC1_svec_var(alpha, beta, mGamma);
+local K, mGa, beta_o, alpha_o, mC1;
+
+K = rows(alpha);
+
+	if ismiss(mGamma) == 1;			/* check whether lags are present*/ 
+		mGa = eye(K);
+	else;
+	   mGa = ComputeMeanLag_svec_var(mGamma);
+	endif;   
+		
+
+	 /* orthogonal complement of beta */
+	 beta_o = null(beta');	
+	 if scalerr(beta_o) == 1;  
+	 "";  "There is no null space of beta!"; /* check whether the 		*/
+   	 endif; 								 /* null space exists  		*/   	   	   	    	 
+   	 
+   	 alpha_o = null(alpha');	
+	 
+	/* orthogonal complemt of alpha  */
+	if scalerr(alpha_o) == 1;  
+	"";  "There is no null space of alpha!"; /* check whether the  */
+   	endif;    				 				 /* null space exists  */
+	    mC1 = beta_o*inv(alpha_o'*mGa*beta_o)*alpha_o'; /* total impact matrix C(1) */
+retp(mC1);	     
+endp;
+
+/*
+**	Purpose: Compute mean lag matrix needed for computation of long
+**			 long run impact matrix C(1).
+**
+**	Imput:   mGamma:  K x K(p-1) matrix coefficient matrix of lagged differences 
+**			    	  \Gamma = \Gamma_1 ... \Gamma_{p-1}  
+**
+**	Output:  mGa:    I_K - Gamma_1 - ... - \Gamma_{p-1}
+**
+**                  equals I_K if no lagged differences are included 
+*/
+proc(1) = ComputeMeanLag_svec_var(mGamma);
+local K, p, mGa, i;
+
+K 	= rows(mGamma);
+p 	= cols(mGamma)/K;
+
+mGa = eye(K);
+
+i = 1;
+do while i <= p;
+   mGa = mGa - mGamma[.,(i-1)*K+1:i*K];
+   i = i +1;
+endo;
+
+retp(mGa);
+endp;
+
+
+/*
+**	Purpose: 	Computes approtiate restrictions matrices in the 
+**				presence of long run restrictions	
+**
+**	Input:		mB_Res: 	K x K matrix of user specified restrictions for contemp. impact matrix
+**							-1e12 - unrestricted, 0 - restricted to 0;
+**
+**				mC1_Res: 	K x K matrix of user specified restrictions for long run impact matrix	
+**							-1e12 - unrestricted, 0 - restricted to 0;
+**
+**				mC1:		K x K, long run impact matrix	
+**
+**	
+**	Output: 	mS: 		2*K^2 x nfreepar, restriction matrix in explicit form
+**
+**				vs:			K^2 x 1, vector of normalizing constants
+**
+**				model:		is always 3: C-model
+**
+**				nfreea:		# of free parameters in A, is always 0 because we estimate a C model
+**				
+**				nfreeb:		# of parameters in \gamma_B, because of long run restrictions this does not
+**							correspond to # of par. in B. 
+**
+**				nfreeall:	nfreea+nfreeb
+**
+**				nResB:		# of contemp. restrictions
+**
+**				nResC1		# of long run restrictions
+**				
+*/
+proc(8) = GetResMatricesLR_svec_var(mB_Res, mC1_Res, mC1); 
+local K, mRo, vSel, mR_B, mR_C1, mR, mSb, mS, vs, model, nfreea, nfreeb, nfreeall;
+local nResC1, nResB;
+
+	   K = rows(mB_Res);
+
+	 mRo = eye(K^2);
+	vSel = vec(mB_Res).ne 0;	
+	mR_B = delif(mRo,vSel);
+	
+		
+	 mRo = eye(K^2);
+ 	vSel = vec(mC1_Res).ne 0;
+
+   mR_C1 = delif(mRo,vSel);
+
+   if ismiss(mR_C1);
+	mR_C1 = {};
+   endif;	
+
+   mR_C1 = mR_C1*(eye(K).*.mC1);
+   
+
+   if ismiss(mR_B)==0;
+   	mR     = mR_C1|mR_B;   	
+   else;
+   	mR     = mR_C1;
+   endif;     	
+   	
+   mSb    = null(mR);    
+   if scalerr(mSb) == 1;  
+   errorlog("Cannot compute restrictions in explicit form!\nUse different restrictions...");
+   retp(-10,-10,-10,-10,-10,-10,-10,-10); 
+   endif; 	
+
+  mS     = zeros(K^2,cols(mSb))|mSb;                  
+  nfreeb = cols(mSb);    
+   vs	 = vec(eye(K))|zeros(K^2,1);
+  model  = 3;
+  nfreea = 0;
+  
+nfreeall = nfreea+nfreeb;
+
+if ismiss(mR_C1) == 0;
+ nResC1  = rank(mR_C1);
+else;
+ nResC1 = 0;
+endif;
+
+if ismiss(mR_B) == 0;
+ nResB   = rank(mR_B);
+else;
+ nResB = 0;
+endif;
+
+retp(mS,vs,model,nfreea,nfreeb,nfreeall, nResB, nResC1);
+endp;
+
+
+
+/* 
+**	Purpose:	Checks identification numerically using the starting values
+**
+**	Usage:		{ident, DegreeofOverIdent} = CheckIdentification(vg,mS,vs,nfreeall); 
+**
+**	Input:		vg: 		vector of starting values
+**				
+**				mS: 		Restriction matrix
+**				
+**				vs: 		vector of normalizing constants
+**	
+**				nfreeall:	scalar, number of free parameters
+**
+**	Output:		ident:		1: model identified, 0 model not identified
+**				
+**				DegreeofOverIdent:	gives the degree of overidentification
+*/
+proc(2) = CheckIdentificationLR_svec_var(vg,mS,vs,nfreeall, nResB, nResC1);
+local K,mA, mB, mCom, mV,ident;
+local DegreeofOverIdent,vga,vgb,x;
+local vAB, tmp;       
+       
+	 K = sqrt(rows(vs)/2);	
+	 
+   if (nResB+nResC1) lt (K*(K-1)/2);	   	
+ 	  retp(0, 0);
+   else; 
+ 	 
+    vAB = mS*vg+vs;	
+	mA = reshape(vAB[1:K^2],K,K)';
+	mB = reshape(vAB[K^2+1:2*K^2],K,K)';
+	
+	/* build in trap for singularity of mB */
+	   
+	     tmp ={};
+	     trap 1;
+		 tmp = inv(mB);
+     	 trap 0;
+	     if scalerr(tmp);
+      	       	/*errorlog("Invalid restrictions, implied B matrix singular!");*/
+	     retp(-1,0);	/* return noConvergence = 1*/
+   	   	 endif;
+	   
+       mCom = commutation_svar_var(K);
+	   /* see page 173, Lütkepohl Kraetzig Applied TSA*/   
+       mV   = (eye(K^2)+mCom)*((inv(mA)*mB)'.*.inv(mB)) ~ -1*(eye(K^2)+mCom)*(eye(K).*.inv(mB)); 
+   	   DegreeofOverIdent = K*(K+1)/2 - nfreeall;
+	   
+       if ismiss(mV)==0 and ismiss(mS)==0;
+	 		if sumc(eig((mV*mS)'(mV*mS)).<1E-10) == 0;
+				retp(1, DegreeofOverIdent);
+			endif;
+	   endif;		
+
+	   /* identification failed */
+  	   retp(0, 0); 
+  endif;
+endp;
+
+
+
+/*
+**	Purpose:	Write results of SVAR with long run restrictions to screen and ASCII-file
+**
+**		BS_ind: if 1, bootstrap std. errors and t-values are printed
+**				if 0, only point estimates are printed
+*/
+proc(0) = OutputResultsLR_svec_var(mB,mSigmaUt,i,LLnew,LR_stat,LR_prob,DegreeofOverIdent,T,noConvergence,maxIterations,vg,model,i_ident,iCorr,i_iRT,i_itercorr,i_coCorr,vg_corr,mC1ident,nResB, nResC1,BS_ind,mSE_mB, mt_mB,mSE_mC1ident,mt_mC1ident, fname);
+local K;
+screen off;
+output file = ^fname reset;
+"";
+if model == 3;
+"This is a B-model with long run restrictions";
+endif;
+
+format /rd 0,0;
+
+if i_ident >= 0;
+ "";
+ "Long run restrictions provide(s) " nResC1 "independent restriction(s).";
+ "Contemporaneous restrictions provide(s) " nResB "additional restriction(s).";
+ "";
+endif;
+
+K = rows(mC1ident);
+
+format /rd 8,4;
+
+  if i_ident == -1;
+    "";
+    "Invalid restrictions, implied B matrix singular!";
+  elseif i_ident == 0;  
+
+	if (nResC1+nResB) lt (K*(K-1)/2);
+		"You have specified too few independent restrictions...";
+		
+	else;
+	     "Model is not identified at starting values";
+  	endif;
+  	"";
+  	"Model is not identified, use different restrictions and try again!";
+else;
+	if iCorr == 1 and i_iRT == 0 and i_coCorr == 0;
+			"";
+			"Step 1:";
+			"Obtaining starting values from decomposition of correlation matrix...";
+			"Iterations needed for correlation matrix decomposition: " i_itercorr;
+			"Vector of rescaled starting values: " vg_corr;
+			"";
+			"Step 2:";
+					if noConvergence == 0;
+					format /rd 8,4;
+					"Structural VAR Estimation Results";
+					"ML Estimation, Scoring Algorithm (see Amisano & Giannini (1992))";
+					
+						format /rd 0,0; 
+						"Convergence after " i "iterations";
+						format /rd 8,4;
+						"Log Likelihood: " LLnew;	
+						if DegreeofOverIdent == 0;
+						"Structural VAR is just identified";
+						else;
+						"Structural VAR is over-identified with " DegreeofOverIdent " degrees of freedom";
+						"LR Test: Chi^2(" DegreeofOverIdent "): " LR_Stat ", Prob: " LR_prob ;
+						endif;
+						"";		
+						"Estimated B matrix:"  mB;
+						"";
+						if BS_ind == 1;
+							"Bootstrap standard errors:"
+							mSE_mB;
+							"";
+							"Bootstrap t-values:"
+							mt_mB;
+							"";
+						endif;	
+						"Estimated long run impact matrix" mC1ident;
+						"";
+						if BS_ind == 1;
+							"Bootstrap standard errors:"
+							mSE_mC1ident;
+							"";
+							"Bootstrap t-values:"
+							mt_mC1ident;
+							"";
+						endif;	
+
+						"SigmaU~*100" mSigmaUt*100;
+						"end of ML estimation";
+						"";
+					else;
+						"";
+						"Warning!";
+						format /rd 0,0;
+						"No Convergence after "  maxIterations " iterations";
+						format /rd 8,4;
+						"Try again using different starting values...";
+						"";
+					endif;	
+		elseif iCorr == 1 and (i_iRT == 1 or i_coCorr == 1);
+		
+			"Decomposition of correlation matrix failed";
+			"Try again...";
+		elseif iCorr == 0 and noConvergence == 0;
+			format /rd 8,4;
+			"Structural VAR Estimation Results";
+			"ML Estimation, Scoring Algorithm (see Amisano & Giannini (1992))";
+
+				format /rd 0,0; 
+				"Convergence after " i "iterations";
+				format /rd 8,4;
+				"Log Likelihood: " LLnew;	
+				if DegreeofOverIdent == 0;
+				"Structural VAR is just identified";
+				else;
+				"Structural VAR is over-identified with " DegreeofOverIdent " degrees of freedom";
+				"LR Test: Chi^2(" DegreeofOverIdent "): " LR_Stat ", Prob: " LR_prob ;
+				endif;
+				"";		
+				"Estimated B matrix"  mB;
+				"";
+				if BS_ind == 1;
+						"Bootstrap standard errors:"
+						mSE_mB;
+						"";
+						"Bootstrap t-values:"
+						mt_mB;
+						"";
+				 endif;	
+					"Estimated long run impact matrix" mC1ident;
+					"";
+					if BS_ind == 1;
+						"Bootstrap standard errors:"
+						mSE_mC1ident;
+						"";
+						"Bootstrap t-values:"
+						mt_mC1ident;
+						"";
+					endif;	
+				"SigmaU~*100" mSigmaUt*100;
+				"end of ML estimation";
+				"";
+			elseif iCorr == 0 and noConvergence == 1;
+				"";
+				"Warning!";
+				format /rd 0,0;
+				"No Convergence after "  maxIterations " iterations";
+				format /rd 8,4;
+				"Try again using different starting values...";
+				"";
+			endif;
+endif;	/* endif i_ident*/
+output off;
+screen on;
+endp;
+
+
+
+/*
+**	Purpose: Estimates structural decomposition by ML based in VECM
+**	
+**  Usage:	{mB,mSigmaUt,i,LLnew,LR_stat,LR_prob,noConvergence}
+**			  =	MLEstSVAR(mSigmaU,mS,vs,vg,T,eps1_tol,eps2_tol,DegreeofOverIdent,maxIterations,model);
+**	
+**
+**	Input: 		
+**			mSigmaU		reduced form covariance matrix
+**
+**				mS			restriction matrix
+**
+**				vg			vector with starting values
+**
+**				T			observation used in estimation
+**
+**				eps1_tol	tolerance for relative parameter change
+**
+**				eps2_tol 	tolerance for relative change in log likelihood
+**
+**				DegreeofOverIdent		degreeofoveridentification
+**
+**				maxIterations	max. # of iterations
+**			
+**				model		model indicator: 1=AB, 2=K, 3=C
+**
+**	Output:						
+**				mB			estimated B matrix
+**
+**				vg_B		vector of free parameters, used as start values in bootstrap
+**
+**				mSigmaUt	ML estimate of covariance matrix
+**
+**				i 			# of iterations needed
+**
+**				LLnew		max LogLikelihood value
+**
+**				LR_stat		LR test statistic for overidentifying restrictions
+**				
+**				LR_prob		marginal significance level for LR_Stat
+**
+**			noConvergence	0 if alg. converged, else 1
+**
+*/
+proc(8)=MLEstSVECM_svec_var(mSigmaU,mS,vs,vg,T,eps1_tol,eps2_tol,DegreeofOverIdent,maxIterations,model);
+local i, eps1,eps2, mK, mIAB, mIga, mHess_mK, v_scoreK, v_scoreAB;
+local v_scoregamma, lambda1, alpha, vgold, mSigmaUt;
+local LLnew, llold;
+local K, mA, mB, mCom; 
+local length;
+local lambda;
+local mSigmaAB, std_AB;
+local maxls,x;
+local LR_Stat, Lr_prob, mA_std, mB_std, noConvergence;
+local vecAB,vg_B,tmp;
+
+maxls   = 1;
+K 	 	= rows(mSigmaU);
+vecAB   = mS*vg+vs;
+mA   	= reshape(vecAB[1:K^2,1],K,K)';
+mB   	= reshape(vecAB[K^2+1:2*K^2,1],K,K)';
+mCom 	= commutation_svar_var(K);
+noConvergence = 0;
+
+vgold   = vg;
+
+eps1 	= 100;
+eps2 	= 100;
+
+mSigmaUt = inv(mA)*mB*mB'*inv(mA');
+   	  mK = inv(mB)*mA;
+   llold = T/2*ln(det(mK)^2)-T/2*sumc(diag((mK'mK*mSigmaUt)));
+
+i = 0;
+do while ((eps1.>eps1_tol) or (eps2.>eps2_tol)) and i<maxIterations;
+		
+          mK = inv(mB)*mA;            
+        mIAB = T*(inv(mK).*.inv(mB')|-1*(eye(K).*.inv(mB')))*(eye(K^2)+ mCom)*(inv(mK').*.inv(mB)~-1*(eye(K).*.inv(mB)));        
+        mIga = mS'*mIAB*mS;     
+ v_scoreK 	 = T*(vec(inv(mK)')'-vec(mK)'*(mSigmaU.*.eye(K)));
+v_scoreAB 	 = v_scoreK * ((eye(K).*.inv(mB))~-1*mA'inv(mB').*.inv(mB));
+v_scoregamma = v_scoreAB*mS;  
+   		   
+   	   /* RB, MK changed this block on May 22, 2003 */
+   	   tmp ={};
+   	   tmp = inv(mIga);
+  
+       length = maxc(abs(tmp*v_scoregamma'));
+       if length > maxls;
+         lambda = maxls/length;
+       else;
+       	 lambda =1;
+       endif;
+       
+	  	 vg = vgold +lambda*tmp*v_scoregamma';
+	
+	   vecAB = mS*vg+vs;
+	   
+	   
+ 	    mA = reshape(vecAB[1:K^2],K,K)';
+	    mB = reshape(vecAB[K^2+1:2*K^2],K,K)';	 
+   
+	   mK = inv(mB)*mA;
+ mSigmaUt = inv(mA)*mB*mB'*inv(mA');
+   
+   LLnew  = T/2*ln(det(mK)^2)-T/2*sumc(diag((mK'mK*mSigmaUt)));	
+   	 
+     eps2 = abs((llnew-llold)/llold);
+	 eps1 = abs((vg-vgold)/vgold);
+    vgold = vg;	
+   llold  = llnew;
+   i = i +1;  
+   
+  endo;
+	
+
+if (eps1.>eps1_tol) or (eps2>eps2_tol);
+  noConvergence = 1;
+endif;  
+	
+	
+	    if sumc(diag(inv(mA)*mB).<0) ne 0;               /* normalize sign of mB */
+		  x = diag(inv(mA)*mB).<0; 					
+		mB[.,indexcat(x,1)] = -1*mB[.,indexcat(x,1)];	
+		endif; 
+				
+		vg_B = inv(mS'mS)*mS'*vec(mA~mB);
+	
+													/* compute LR test for over-identifying restr. */				    
+      if DegreeofOverIdent > 0;       
+        LR_stat =  T*(ln(det(mSigmaUt))-ln(det(mSigmaU)));
+        LR_prob =  cdfchic(LR_stat,DegreeofOverIdent);
+      else;
+        LR_Stat = 0;
+        LR_Prob = 0;
+     endif;
+
+retp(mB,vg_B,mSigmaUt,i,LLnew,LR_stat,LR_prob,noConvergence);
+endp;
+
+/*
+**  MLEstSVECM to be used in boostrap!
+**	
+**	- if no convergence, different starting values are used
+**	
+**	- stops if no convergence after 10 retries with different starting values
+*/
+proc(1) = GetStructDecompinBS_svec_var(mSigmaU, mS, vs, vg, T, eps1_tol, eps2_tol, DegreeofOverIdent, maxIterations,model,j);
+local noCon_BS, c_count, mB_BS, i,tmp;
+
+	noCon_BS = 1;     		          
+	c_count  = 1;
+	do while noCon_BS == 1;	
+
+	 {mB_BS,tmp,tmp,i,tmp,tmp,tmp,noCon_BS} 
+	 = MLEstSVECM_svec_var(mSigmaU,mS,vs,vg,T,eps1_tol, eps2_tol, DegreeofOverIdent,maxIterations,model);
+			
+		if noCon_BS  == 1;			
+		   "no convergence in repl. " j " trying different start values...";
+		   vg = rndn(rows(vg),1);
+		endif;
+		
+		c_count = c_count + 1;
+		if c_count > 10;
+			mB_BS = missex(mB_BS,ones(rows(mB_BS),cols(mB_BS)));
+			errorlog("No convergence in structural decomposition after 50 retries!");
+			retp(0);
+		endif;			
+	endo;	
+retp(mB_BS);
+endp;
+
+/*
+**	Computes bootstrap standard errors and t-values for
+**	contemp. and long run impact matrix
+**	
+**	Input: 	mmA0:  		K^2 x M, each column holds vectorized bootstrapped contemp. impact matrix 
+**						(M: # of bootstrap replications)			
+**
+**			mmPhiOne:  	K^2 x M, each column holds vectorized bootstrapped long run impact matrix 
+**			
+**			mA0:   		K x K, point estimate of contemp. impact matrix	
+**
+**			mPhiOne:	K x K, of point estimate of long run impact matrix
+**
+**			mB_Res:		K x K matrix, zeros indicate zero restrictions in contemp. impact matrix
+**
+**			mC1_Res:	K x K matrix, zeros indicate zero restrictions in long run impact matrix
+**
+**
+**	Output: m_se_mA0:		K x K, bootstrap std errors of contemp. impact matrix	
+**
+**			m_se_mPhiOne 	K x K, bootstrap std errors of long run impact matrix	
+**
+**			m_tv_mA0:		K x K, bootstap t-values of contemp. impact matrix
+**			
+**		 m_tv_mPhiOne:		K x K, bootstrap t-values of long run impact matrix	
+**			
+**	
+**
+*/
+proc(4) = GetBootstrapStdError_svec_var(mmA0,mmPhiOne,mA0,mPhiOne,K,mB_Res,mC1_Res);
+local m_se_mA0,m_se_mPhiOne,m_tv_mA0,m_tv_mPhiOne, mR_C;
+local vBsel,vC1sel,mR_B, v_se_mPhiOne, v_se_mA0, v_tv_mA0, v_tv_mPhiOne;
+ 	 
+ 
+ m_se_mA0     = reshape(sqrt(meanc(((mmA0-vec(mA0))^2)')),K,K)';			/* compute bootstrap standard errors for A0 	*/
+ m_se_mPhiOne = reshape(sqrt(meanc(((mmPhiOne-vec(mPhiOne))^2)')),K,K)';	/* compute bootstrap standard errors for C1 	*/
+
+ m_tv_mA0 	   = mA0./m_se_mA0 ; 	  	 
+ m_tv_mPhiOne  = mPhiOne./m_se_mPhiOne;
+ 
+ 	    vBsel =  indexcat(vec(mB_res),0);
+ 	   vC1sel =  indexcat(vec(mC1_res),0);
+
+	 v_se_mPhiOne = vec(m_se_mPhiOne);
+	 v_tv_mPhiOne = vec(m_tv_mPhiOne);
+
+     v_se_mA0 = vec(m_se_mA0);
+	 v_tv_mA0 = vec(m_tv_mA0);
+     
+       if ismiss(vC1sel);
+   		m_se_mPhiOne = reshape(v_se_mPhiOne,K, K)';
+	 	m_tv_mPhiOne = reshape(v_tv_mPhiOne,K, K)';   
+       else;  
+		v_se_mPhiOne[vC1sel] = zeros(rows(vC1sel),1);
+        v_tv_mPhiOne[vC1sel] = zeros(rows(vC1sel),1);
+        m_se_mPhiOne = reshape(v_se_mPhiOne,K, K)';
+		m_tv_mPhiOne = reshape(v_tv_mPhiOne,K, K)';   
+  	   endif;
+	 
+	 
+	 if ismiss(vBsel);        
+		 m_se_mA0 = reshape(v_se_mA0,K, K)';
+	 	 m_tv_mA0 = reshape(v_tv_mA0,K, K)';
+	 else;	 
+		 v_se_mA0[vBsel] = zeros(rows(vBsel),1);
+		 v_tv_mA0[vBsel] = zeros(rows(vBsel),1);
+		 m_se_mA0 = reshape(v_se_mA0,K, K)';
+		 m_tv_mA0 = reshape(v_tv_mA0,K, K)';
+	endif;	 
+
+	 
+	 
+retp(m_se_mA0,m_se_mPhiOne,m_tv_mA0,m_tv_mPhiOne);
+endp;
+
+
+
+/*
+**	Computes bootstrap standard errors and t-values of
+**	contemp. and long run impact matrix. It also computes the point estimates again.
+**	
+**		      	
+**                      var:            databuffer with parameters of reduced form estimation
+**                      bootRep:        skalar, number of bootstrap replication 
+**                      seed:           skalar, seed value
+**
+**
+**	Output: 
+**
+**                      m_se_B:	        K x K, bootstrap std errors of contemp. impact matrix	
+**
+**			m_se_mCB 	K x K, bootstrap std errors of long run impact matrix	
+**
+**                      m_tv_B:	        K x K, bootstrap t-values of contemp. impact matrix	
+**
+**			m_tv_mCB 	K x K, bootstrap t-values of long run impact matrix	
+
+**
+**			
+**	
+**
+*/
+proc(4) = BootstrapStdErr_svec_var(var,beta,beta_d,bootRep,seed,mB_Res,mC1_Res,vg_bs,T,K,mB,mCB,eps1_tol, eps2_tol, 
+	  DegreeofOverIdent, maxIterations);
+
+
+  local A0,A,B,C_VAR,F_VAR, mx_c_var,mx_tf, y0,u,x,d,z,y_star,varHat;
+  local m_se_B,m_se_mCB,m_tv_B,m_tv_mCB,model,alpha_BS, beta_BS, mGamma_BS,mSigmaU_BS,bet;
+  local mS_BS,vs_BS,nfreea,nfreeb,nfreeall, nResB, nResC1;
+  local M_B_BS,mC1_BS,M_Ci_BS,mCident_BS,mmB0,mmC0, mB_BS,del_boot_rep,tmp;
+  
+  m_se_B={};
+  m_se_mCB={};
+  m_tv_B={};
+  m_tv_mCB={};
+  @ model estimation without estimating beta again @  
+  var = vml_vdel(var, "em"$|"r_est"$|"cir"$|"idx_equa");
+  var = vml_SetCointRelation(var, beta, beta_d);
+  varHat = var_EstimateModel(var);   
+  
+  @ prepare all parameters to recompute the time series @
+  {A0,A,B,C_VAR,F_VAR, mx_c_var,mx_tf, y0,u,x,d,z} = 
+  vml_residualBootstrap_prepare(varHat);
+  
+  mmB0  = zeros(K^2,bootRep);
+  mmC0  = zeros(K^2,bootRep);
+  del_boot_rep=zeros(bootRep,1);
+  
+	for i(1,bootRep,1);
+	  @ compute bootstrap time series @
+	  {y_star,seed} = 
+	  vml_residualBootstrap(A0,A,B,C_VAR,F_VAR, mx_c_var,mx_tf, y0,u,x,d,z, seed);
+
+	  @ update var @
+	  varHat = vml_SetEndogenousVariables(var, y_star);
+	  
+	  @ estimate model (bootstrap data) @
+	  varHat = var_EstimateModel(varHat);
+	  	  	  
+	  mSigmaU_BS    = vml_VeRead(varHat,"cvRes");
+	  alpha_BS      = vml_VeRead(varHat,"alpha");
+	  mGamma_BS     = vml_VeRead(varHat,"G");
+	  
+	  bet=beta';
+	  mC1_BS = ComputeC1_svec_var(alpha_BS,bet,mGamma_BS);
+	  
+	  {mS_BS,vs_BS,model,nfreea,nfreeb,nfreeall, nResB, nResC1}  =  
+	  GetResMatricesLR_svec_var(mB_Res, mC1_Res, mC1_BS); 	
+	  
+	  if cols(mS_BS) == rows(vg_BS) and model > -10;
+	    mB_BS = GetStructDecompinBS_svec_var(mSigmaU_BS, mS_BS, vs_BS, vg_BS, T, eps1_tol, eps2_tol, 
+	    DegreeofOverIdent, maxIterations,model,i);
+	  
+	    mCident_BS = mC1_BS*mB_BS;
+	    
+	    tmp = vec(mB_BS);
+   	    if rows(mmB0[.,i]) == rows(tmp);	      
+	      mmB0[.,i] = tmp;       /* store BS results in matrix*/
+	    endif;  
+	    tmp = vec(mCident_BS);
+	    if rows(mmC0[.,i]) == rows(tmp);
+	      mmC0[.,i] = tmp;  /* store BS results in matrix*/
+	    endif;
+	    
+	    @ Progress notification @
+	    var__ProgressNotification(i+0,bootRep);
+	  else;
+	    "failure in SVEC bootstrap replication" i;
+	    del_boot_rep[i,1]=1;
+	  endif;
+	  
+	endfor;
+	
+	/* remove failed bootstrap replications */
+	if sumc(del_boot_rep) > 0;
+	  mmB0=delif(mmB0', del_boot_rep)';
+	  mmC0=delif(mmC0', del_boot_rep)';
+	endif;
+	
+	/* compute bootstrap standard errors of B 	*/
+	m_se_B     = reshape(sqrt(meanc(((mmB0-vec(mB))^2)')),K,K)';		
+	
+	/* compute bootstrap standard errors of C1 	*/
+	m_se_mCB = reshape(sqrt(meanc(((mmC0-vec(mCB))^2)')),K,K)';	
+	
+	
+	/* compute t-values and take care of zero division */
+	m_tv_B=zeros(rows(mB),cols(mB));
+	m_tv_mCB=zeros(rows(mB),cols(mB));
+	for i(1,rows(mB),1);
+	  for j(1,cols(mB),1);
+	    if mB_res[i,j] ne 0;
+	      m_tv_B[i,j]= mB[i,j]./m_se_B[i,j] ; 	  	 
+	    endif;
+	    if mC1_res[i,j] ne 0;	      
+	      m_tv_mCB[i,j]= mCB[i,j]./m_se_mCB[i,j] ; 	  	 
+	    endif;
+	  endfor;
+	endfor;
+	
+
+retp(m_se_B,m_se_mCB,m_tv_B,m_tv_mCB);
+endp;
+

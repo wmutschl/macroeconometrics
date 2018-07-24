@@ -1,0 +1,45 @@
+*
+* Replication file for Gali, "How Well Does the IS-LM Model Fit Postwar
+* U.S. Data", QJE 1992, vol 107, no. 2, pp 709-738.
+*
+* Estimation and testing of structural VAR's (section II, parts C and D).
+*
+source islmdata.src
+source islmvarsetup.src
+*
+* This estimates both the just-identified models (one with just one
+* additional restriction) and the over-identified model (with two).
+* These are done in a particular order to get better convergence
+* properties by not changing the model too much from one model to the
+* next. There was a bit of experimenting involved in coming up with this.
+*
+compute theta=theta0
+cvmodel(parmset=base+r8,b=bf,iters=400) %sigma
+compute loglr8=%logl
+cvmodel(parmset=base+r7+r8,b=bf,iters=400) %sigma
+compute loglr7r8=%logl
+cvmodel(parmset=base+r7,b=bf,iters=400) %sigma
+compute loglr7=%logl
+cvmodel(parmset=base+r6+r7,b=bf,iters=400) %sigma
+compute loglr6r7=%logl
+cvmodel(parmset=base+r6,b=bf,iters=400) %sigma
+compute loglr6=%logl
+cvmodel(parmset=base+r6+r8,b=bf,iters=400) %sigma
+compute loglr6r8=%logl
+*
+* This does the tests for overidentifying restrictions. Because the
+* model is estimated by ML rather than by 2SLS, the test statistics are
+* independent of normalization, so the test for R7 given R6 and R6 given
+* R7 are identical. The results are qualitatively the same as in the
+* paper.
+*
+report(action=define)
+report(atrow=1,atcol=1,span) "Test of Overidentifying Restrictions"
+report(atrow=2,atcol=2) "R6" "R7" "R8"
+report(atrow=3,atcol=1,fillby=cols) "R6" "R7" "R8"
+report(atrow=3,atcol=2) "" -2.0*(loglr6r7-loglr6) -2.0*(loglr6r8-loglr6)
+report(atrow=4,atcol=2) -2.0*(loglr6r7-loglr7) "" -2.0*(loglr7r8-loglr7)
+report(atrow=5,atcol=2) -2.0*(loglr6r8-loglr8) -2.0*(loglr7r8-loglr8) ""
+report(action=format,picture="*.##")
+report(action=show)
+

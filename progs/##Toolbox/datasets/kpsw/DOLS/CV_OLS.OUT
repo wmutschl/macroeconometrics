@@ -1,0 +1,352 @@
+ Table 2 and 3 cointegrating regressions
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+    1.02900    0.00189
+ 
+   Matrix of standard errors:
+    0.03321    0.00267
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    0.93895   -0.16336    0.23849   -0.14412
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+    1.03836   -0.00272
+ 
+   Matrix of standard errors:
+    0.04900    0.00394
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    0.85513   -0.14357    0.08158   -0.03990
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+    0.00334
+ 
+   Matrix of standard errors:
+    0.00215
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    0.97918   -0.12053    0.11865   -0.18211
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+   -0.00280
+ 
+   Matrix of standard errors:
+    0.00503
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.16392   -0.24105   -0.00636   -0.08104
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+    1.19701   -0.01343
+ 
+   Matrix of standard errors:
+    0.06180    0.00377
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.17293   -0.32444    0.13632   -0.12775
+ ------------------ Hypothesis tests: ---------------------------------
+----------------------------------------------------------------------- 
+           test of hypothesis T1C:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:         9       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+
+    1.05846
+    1.00442
+ 
+   Matrix of standard errors:
+
+    0.02646
+    0.03772
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.66084   -0.04905    0.28466    0.03704    0.07064    0.09652   -0.12721
+   -0.10078
+    0.04413    0.88236   -0.03053   -0.09306   -0.08196    0.03533    0.23309
+   -0.03765
+ 
+ **chisquare stat, p-value, df: ;    4.96443    0.08356    2.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T2A:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+    1.19701   -0.01343
+ 
+   Matrix of standard errors:
+    0.06180    0.00377
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+    1.17293   -0.32444    0.13632   -0.12775
+ 
+ **chisquare stat, p-value, df: ;   12.73595    0.00172    2.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B1:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+
+    1.11767   -0.00379   -0.00397
+    1.11956   -0.00243   -0.00630
+    1.15247   -0.00903   -0.00156
+ 
+   Matrix of standard errors:
+
+    0.05021    0.00295    0.00263
+    0.08346    0.00490    0.00436
+    0.06337    0.00372    0.00331
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.80888   -0.03001    0.08556   -0.04412    0.00207   -0.14397    0.08282
+    0.06957    0.17134   -0.01518   -0.01905   -0.08462
+   -0.14309    0.90363    0.19789    0.19594   -0.21247    0.03438   -0.06220
+    0.05932   -0.67608    0.09822   -0.03439    0.39473
+    0.12452    0.00718    0.95537   -0.14746    0.02537   -0.10443   -0.02493
+   -0.00817   -0.09769   -0.19028   -0.02931   -0.01301
+ 
+ **chisquare stat, p-value, df: ;   12.56830    0.08335    7.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B2:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+
+    1.06721   -0.00256
+    1.14708   -0.00863
+    1.19701   -0.01343
+    7.67797    0.05627
+ 
+   Matrix of standard errors:
+
+    0.05983    0.00365
+    0.10442    0.00636
+    0.06583    0.00401
+    6.11602    0.37279
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.85470   -0.03862   -0.03375   -0.00029   -0.07118    0.03507   -0.03108
+   -0.00012    0.16400    0.04507    0.10051    0.00006   -0.14047   -0.01874
+   -0.07972   -0.00014
+   -0.25681    0.89418    0.20376    0.00001    0.16444   -0.21914    0.11071
+   -0.00006   -0.15263    0.04938   -0.69411   -0.00153    0.33271    0.04668
+    0.39279    0.00056
+    0.01225    0.06751    1.10045   -0.00033    0.00599   -0.06174   -0.33079
+   -0.00041   -0.23152    0.01137    0.20771    0.00060    0.05938    0.00752
+   -0.16467   -0.00071
+  -22.87654  -21.80592   22.73632    0.33984  -24.59451   17.35206   16.31195
+    0.21982    9.40071  -11.33881  -30.92512   -0.06555   33.74822    6.75364
+    9.48953    0.18152
+ 
+ **chisquare stat, p-value, df: ;   40.10533    0.00000    6.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B3:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+
+    1.11767   -0.00379   -0.00397
+    1.11956   -0.00243   -0.00630
+    1.15247   -0.00903   -0.00156
+ 
+   Matrix of standard errors:
+
+    0.05021    0.00295    0.00263
+    0.08346    0.00490    0.00436
+    0.06337    0.00372    0.00331
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.80888   -0.03001    0.08556   -0.04412    0.00207   -0.14397    0.08282
+    0.06957    0.17134   -0.01518   -0.01905   -0.08462
+   -0.14309    0.90363    0.19789    0.19594   -0.21247    0.03438   -0.06220
+    0.05932   -0.67608    0.09822   -0.03439    0.39473
+    0.12452    0.00718    0.95537   -0.14746    0.02537   -0.10443   -0.02493
+   -0.00817   -0.09769   -0.19028   -0.02931   -0.01301
+ 
+ **chisquare stat, p-value, df: ;    7.59538    0.17999    5.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T3B4:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+
+    1.11767   -0.00379   -0.00397
+    1.11956   -0.00243   -0.00630
+    1.15247   -0.00903   -0.00156
+ 
+   Matrix of standard errors:
+
+    0.05021    0.00295    0.00263
+    0.08346    0.00490    0.00436
+    0.06337    0.00372    0.00331
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.80888   -0.03001    0.08556   -0.04412    0.00207   -0.14397    0.08282
+    0.06957    0.17134   -0.01518   -0.01905   -0.08462
+   -0.14309    0.90363    0.19789    0.19594   -0.21247    0.03438   -0.06220
+    0.05932   -0.67608    0.09822   -0.03439    0.39473
+    0.12452    0.00718    0.95537   -0.14746    0.02537   -0.10443   -0.02493
+   -0.00817   -0.09769   -0.19028   -0.02931   -0.01301
+ 
+ **chisquare stat, p-value, df: ;   42.03978    0.00000    7.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T6M4:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+
+    1.06721   -0.00256
+    1.14708   -0.00863
+    1.19701   -0.01343
+    7.67797    0.05627
+ 
+   Matrix of standard errors:
+
+    0.05983    0.00365
+    0.10442    0.00636
+    0.06583    0.00401
+    6.11602    0.37279
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.85470   -0.03862   -0.03375   -0.00029   -0.07118    0.03507   -0.03108
+   -0.00012    0.16400    0.04507    0.10051    0.00006   -0.14047   -0.01874
+   -0.07972   -0.00014
+   -0.25681    0.89418    0.20376    0.00001    0.16444   -0.21914    0.11071
+   -0.00006   -0.15263    0.04938   -0.69411   -0.00153    0.33271    0.04668
+    0.39279    0.00056
+    0.01225    0.06751    1.10045   -0.00033    0.00599   -0.06174   -0.33079
+   -0.00041   -0.23152    0.01137    0.20771    0.00060    0.05938    0.00752
+   -0.16467   -0.00071
+  -22.87654  -21.80592   22.73632    0.33984  -24.59451   17.35206   16.31195
+    0.21982    9.40071  -11.33881  -30.92512   -0.06555   33.74822    6.75364
+    9.48953    0.18152
+ 
+ **chisquare stat, p-value, df: ;   40.29264    0.00000    6.00000
+----------------------------------------------------------------------- 
+           test of hypothesis T6M5:
+ ****** RESULTS of DOLS system estimation ******
+ 
+ 
+ --------- Dynamic OLS estimates of cointegrating vector ---------
+    first, last period of regression:        29       163
+        no. of leads (= no. of lags):         5
+ order of Cochrane-Orcutt correction:         4
+ 
+   Matrix of point estimates:
+
+    1.06721   -0.00256
+    1.14708   -0.00863
+    1.19701   -0.01343
+ 
+   Matrix of standard errors:
+
+    0.05937    0.00362
+    0.10189    0.00621
+    0.06748    0.00411
+ 
+ PHIHAT: VAR lag polynomial matrix for errors in DOLS equations,
+         ordered equation by equation:
+
+    0.86572   -0.03866    0.00429   -0.06757    0.03937   -0.05015    0.17719
+    0.04520    0.08665   -0.13597   -0.01872   -0.07621
+   -0.24889    0.89478    0.22798    0.17515   -0.22536    0.10036   -0.15120
+    0.05262   -0.54173    0.37752    0.05990    0.23944
+    0.03341    0.07057    1.14259    0.01035   -0.05565   -0.31579   -0.20705
+    0.01478    0.11617    0.06410    0.00175   -0.11112
+ 
+ **chisquare stat, p-value, df: ;    3.04172    0.55087    4.00000
+
